@@ -12,7 +12,7 @@ public interface LogLevel<T extends LogLevel> extends Comparable<LogLevel> {
 
     public int ordinal();
     
-    public Log<T> logger(String name);
+    public Log<T> log(String name);
     
     public boolean isEnabled();
 }

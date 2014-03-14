@@ -1,10 +1,8 @@
 package com.mastfrog.bunyan;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mastfrog.giulius.ShutdownHookRegistry;
 import com.mastfrog.settings.Settings;
 import com.mastfrog.util.collections.CollectionUtils;
-import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -27,25 +25,9 @@ public class LoggingConfig {
     private final ObjectMapper mapper;
 
     @Inject
-    LoggingConfig(Settings settings, ObjectMapper mapper, ShutdownHookRegistry reg) throws IOException {
+    LoggingConfig(Settings settings, ObjectMapper mapper, LogWriter writer) throws IOException {
         this.settings = settings;
         hostname = hostname(settings);
-        String file = settings.getString("log.file");
-        LogWriter w;
-        if (file != null) {
-            File f = new File(file);
-            w = LogWriter.forFile(f);
-            boolean consoleToo = settings.getBoolean("log.console");
-            if (consoleToo) {
-                w = LogWriter.combine(w, new LogWriter());
-            }
-        } else {
-            w = new LogWriter();
-        }
-        if (settings.getBoolean("log.async", false)) {
-            w = w.async();
-        }
-        writer = w;
         String minLogLevel = settings.getString("log.level");
         int level = -1;
         if (minLogLevel != null) {
@@ -77,7 +59,7 @@ public class LoggingConfig {
         }
         minLevel = level;
         this.mapper = mapper;
-        writer.hook(reg);
+        this.writer = writer;
     }
 
     ObjectMapper mapper() {

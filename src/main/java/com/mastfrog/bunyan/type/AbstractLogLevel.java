@@ -24,7 +24,7 @@ abstract class AbstractLogLevel<T extends LogLevel> implements LogLevel<T> {
     }
 
     @SuppressWarnings("unchecked")
-    public Log<T> logger(String name) {
+    public Log<T> log(String name) {
         return loggers.get().<T>log((T) this, name);
     }
 

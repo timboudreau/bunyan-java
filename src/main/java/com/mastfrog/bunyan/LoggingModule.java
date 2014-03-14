@@ -23,23 +23,8 @@ public class LoggingModule extends AbstractModule {
     @Override
     protected void configure() {
         for (String s : loggers) {
-            bind(Logger.class).annotatedWith(Names.named(s)).toProvider(new LoggerProvider(s, binder().getProvider(Loggers.class)));
-        }
-        bind(LogWriter.class).toProvider(LogWriterProvider.class);
-    }
-
-    private static class LogWriterProvider implements Provider<LogWriter> {
-
-        private final Provider<LoggingConfig> config;
-
-        @Inject
-        public LogWriterProvider(Provider<LoggingConfig> config) {
-            this.config = config;
-        }
-
-        @Override
-        public LogWriter get() {
-            return config.get().writer();
+            bind(Logger.class).annotatedWith(Names.named(s))
+                    .toProvider(new LoggerProvider(s, binder().getProvider(Loggers.class)));
         }
     }
 

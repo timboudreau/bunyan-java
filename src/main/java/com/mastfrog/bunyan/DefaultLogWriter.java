@@ -13,12 +13,13 @@ import javax.inject.Singleton;
  */
 @Singleton
 final class DefaultLogWriter implements LogWriter {
+
     private final LogWriter delegate;
 
     @Inject
     DefaultLogWriter(Settings settings, ShutdownHookRegistry reg) throws IOException {
         String file = settings.getString("log.file");
-        SimpleLogWriter w;
+        LogWriter w;
         if (file != null) {
             File f = new File(file);
             w = SimpleLogWriter.forFile(f);
@@ -30,11 +31,11 @@ final class DefaultLogWriter implements LogWriter {
             w = new SimpleLogWriter();
         }
         if (settings.getBoolean("log.async", false)) {
-            w = w.async();
+            w = SimpleLogWriter.async(w);
         }
         delegate = w;
         if (w instanceof SimpleLogWriter) {
-            w.hook(reg);
+            ((SimpleLogWriter) w).hook(reg);
         }
     }
 

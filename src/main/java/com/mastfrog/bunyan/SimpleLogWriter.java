@@ -25,12 +25,16 @@ public class SimpleLogWriter implements LogWriter {
         System.out.println(s);
     }
 
-    static SimpleLogWriter combine(SimpleLogWriter... writers) {
+    public static LogWriter combine(LogWriter... writers) {
         return new Combined(writers);
     }
 
-    static SimpleLogWriter forFile(File f) throws IOException {
+    public static LogWriter forFile(File f) throws IOException {
         return new FileWriter(f);
+    }
+
+    public static LogWriter async(LogWriter writer) {
+        return writer instanceof AsyncLogWriter ? (LogWriter) writer : new AsyncLogWriter(writer);
     }
 
     void hook(ShutdownHookRegistry reg) {
@@ -46,22 +50,24 @@ public class SimpleLogWriter implements LogWriter {
 
     static class Combined extends SimpleLogWriter {
 
-        private final SimpleLogWriter[] writers;
+        private final LogWriter[] writers;
 
-        public Combined(SimpleLogWriter... writers) {
+        public Combined(LogWriter... writers) {
             this.writers = writers;
         }
 
         @Override
         void hook(ShutdownHookRegistry reg) {
-            for (SimpleLogWriter w : writers) {
-                w.hook(reg);
+            for (LogWriter w : writers) {
+                if (w instanceof SimpleLogWriter) {
+                    ((SimpleLogWriter) w).hook(reg);
+                }
             }
         }
 
         @Override
         public void write(String s) {
-            for (SimpleLogWriter w : writers) {
+            for (LogWriter w : writers) {
                 w.write(s);
             }
         }
@@ -122,7 +128,7 @@ public class SimpleLogWriter implements LogWriter {
         private final ExecutorService exe = Executors.newCachedThreadPool();
         private final Runner runner;
 
-        AsyncLogWriter(SimpleLogWriter writer) {
+        AsyncLogWriter(LogWriter writer) {
             exe.submit(runner = new Runner(queue, writer));
         }
 
@@ -145,9 +151,9 @@ public class SimpleLogWriter implements LogWriter {
         private static class Runner implements Runnable {
 
             private final LinkedBlockingQueue<String> queue;
-            private final SimpleLogWriter writer;
+            private final LogWriter writer;
 
-            public Runner(LinkedBlockingQueue<String> queue, SimpleLogWriter writer) {
+            public Runner(LinkedBlockingQueue<String> queue, LogWriter writer) {
                 this.queue = queue;
                 this.writer = writer;
             }
@@ -184,7 +190,6 @@ public class SimpleLogWriter implements LogWriter {
                             return;
                         }
                     } catch (InterruptedException ex) {
-//                        Logger.getLogger(SimpleLogWriter.class.getName()).log(Level.SEVERE, null, ex);
                         if (stopped) {
                             return;
                         }

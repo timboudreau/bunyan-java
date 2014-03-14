@@ -9,6 +9,9 @@ import com.mastfrog.bunyan.type.Warn;
 import javax.inject.Inject;
 
 /**
+ * Factory for loggers and log levels.  This object can be injected to get
+ * loggers, <i>or</i> you can use <a href="LoggingModule.html">LoggingModule</a>
+ * and simply inject <code>&#064;Named("loggername") Logger logger)</code>.
  *
  * @author Tim Boudreau
  */
@@ -36,10 +39,22 @@ public final class Loggers {
         this.config = config;
     }
 
+    /**
+     * Get a logger
+     * @param name
+     * @return 
+     */
     public Logger logger(String name) {
         return new Logger(name, sink, config, this);
     }
 
+    /**
+     * Create a new log record with the specified level and name
+     * @param <T> The log level tyep
+     * @param level The log level
+     * @param name The name of the logger
+     * @return A log record
+     */
     public <T extends LogLevel> Log<T> log(T level, String name) {
         return logger(name).log(level);
     }

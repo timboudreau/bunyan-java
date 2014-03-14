@@ -12,6 +12,8 @@ import java.io.IOException;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
+ * If you install Jackson-Guice's JacksonModule, this will bind better logging
+ * of Throwables.
  *
  * @author Tim Boudreau
  */

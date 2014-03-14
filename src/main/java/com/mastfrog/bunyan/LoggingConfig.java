@@ -12,6 +12,11 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 /**
+ * Logging configuration.  Determines a few things
+ * for loggers like the default level (controlled with the
+ * setting <code>log.level</code> in the default 
+ * <a href="http://timboudreau.com/builds/job/mastfrog-parent/lastSuccessfulBuild/artifact/giulius-modules/giulius-parent/giulius-settings/target/apidocs/com/mastfrog/settings/Settings.html"><code>Settings</code></a>
+ * injected by Guice.
  *
  * @author Tim Boudreau
  */

@@ -2,7 +2,7 @@ bunyan-java
 ===========
 
 An opinionated implementation of a simple logger in Java whose output is compatible with
-[bunyan](https://github.com/trentm/node-bunyan) logger, the excellent JSON
+[bunyan](https://github.com/trentm/node-bunyan), the excellent JSON
 logger for [NodeJS](http://nodejs.org).
 
 Uses [Guice](https://code.google.com/p/google-guice/) for injection, and has a fluent interface

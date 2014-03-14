@@ -33,7 +33,8 @@ Joda Time, Guice, Giulius, Jackson
 
 You do not have to use Giulius, but the default ``LogWriter`` implementation expects to find
 an instance of ``Settings`` bound.  If you want to use plain Guice, you'll need to implement
-``LogWriter`` or provide a ``Settings``.
+``LogWriter`` or provide a 
+[Settings](http://timboudreau.com/builds/job/mastfrog-parent/lastSuccessfulBuild/artifact/giulius-modules/giulius-parent/giulius-settings/target/apidocs/com/mastfrog/settings/Settings.html).
 
 It is also useful to include giulius-jackson's ``JacksonModule``, which will automatically
 find and bind a Jackson module that adds an improved serializer for ``Throwable``s.

@@ -23,7 +23,7 @@ final class DefaultLogWriter implements LogWriter {
         if (file != null) {
             File f = new File(file);
             w = SimpleLogWriter.forFile(f);
-            boolean consoleToo = settings.getBoolean("log.console");
+            boolean consoleToo = settings.getBoolean("log.console", false);
             if (consoleToo) {
                 w = SimpleLogWriter.combine(w, new SimpleLogWriter());
             }

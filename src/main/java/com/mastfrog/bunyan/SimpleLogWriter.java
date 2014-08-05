@@ -175,7 +175,7 @@ public class SimpleLogWriter implements LogWriter {
             public void run() {
                 Thread.currentThread().setDaemon(true);
                 Thread.currentThread().setName("Log flush");
-                Thread.currentThread().setPriority(Thread.MIN_PRIORITY);
+                Thread.currentThread().setPriority(Thread.NORM_PRIORITY-1);
                 List<String> strings = new LinkedList<>();
                 for (;;) {
                     try {

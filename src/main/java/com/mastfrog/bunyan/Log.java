@@ -41,6 +41,8 @@ public interface Log<T extends LogLevel> extends AutoCloseable {
      */
     public Log<T> add(String name, Object value);
 
+    public Log<T> addIfNotNull(String name, Object value);
+
     /**
      * Add an error. The error's message becomes the message of this log record;
      * its stack is serialized as JSON.

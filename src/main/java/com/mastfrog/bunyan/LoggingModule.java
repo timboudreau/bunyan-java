@@ -5,7 +5,6 @@ import com.google.inject.Provider;
 import com.google.inject.name.Names;
 import java.util.LinkedList;
 import java.util.List;
-import javax.inject.Inject;
 
 /**
  *
@@ -14,6 +13,12 @@ import javax.inject.Inject;
 public class LoggingModule extends AbstractModule {
 
     private final List<String> loggers = new LinkedList<>();
+    public static final String SETTINGS_KEY_LOG_FILE = "log.file";
+    public static final String SETTINGS_KEY_LOG_LEVEL = "log.level";
+    public static final String SETTINGS_KEY_LOG_HOSTNAME = "log.hostname";
+    public static final String DEFAULT_LOG_FILE = "stats.log";
+    public static final String SETTINGS_KEY_ASYNC_LOGGING = "log.async";
+    public static final String SETTINGS_KEY_LOG_TO_CONSOLE = "log.console";
 
     public LoggingModule bindLogger(String name) {
         loggers.add(name);

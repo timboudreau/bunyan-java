@@ -125,7 +125,7 @@ public class SimpleLogWriter implements LogWriter {
     static class AsyncLogWriter extends SimpleLogWriter {
 
         private final LinkedBlockingQueue<String> queue = new LinkedBlockingQueue<String>();
-        private final ExecutorService exe = Executors.newCachedThreadPool();
+        private final ExecutorService exe = Executors.newSingleThreadExecutor();
         private final Runner runner;
 
         AsyncLogWriter(LogWriter writer) {
@@ -158,6 +158,19 @@ public class SimpleLogWriter implements LogWriter {
                 this.writer = writer;
             }
 
+            void flush(List<String> strings) throws InterruptedException {
+                String first = queue.take();
+                strings.add(first);
+                queue.drainTo(strings);
+                for (String s : strings) {
+                    writer.write(s);
+                }
+                strings.clear();
+                if (stopped) {
+                    return;
+                }
+            }
+
             volatile boolean stopped;
 
             void stop() {
@@ -173,22 +186,13 @@ public class SimpleLogWriter implements LogWriter {
 
             @Override
             public void run() {
-                Thread.currentThread().setDaemon(true);
-                Thread.currentThread().setName("Log flush");
-                Thread.currentThread().setPriority(Thread.NORM_PRIORITY-1);
+//                Thread.currentThread().setDaemon(true);
+                Thread.currentThread().setName("Bunyan-Java Log flush");
+                Thread.currentThread().setPriority(Thread.NORM_PRIORITY - 2);
                 List<String> strings = new LinkedList<>();
                 for (;;) {
                     try {
-                        String first = queue.take();
-                        strings.add(first);
-                        queue.drainTo(strings);
-                        for (String s : strings) {
-                            writer.write(s);
-                        }
-                        strings.clear();
-                        if (stopped) {
-                            return;
-                        }
+                        flush(strings);
                     } catch (InterruptedException ex) {
                         if (stopped) {
                             return;

@@ -167,4 +167,12 @@ class LogImpl<T extends LogLevel> implements Log<T> {
                 .put("hostname", config.hostname());
         sink.push(level, mb.build());
     }
+
+    @Override
+    public Log<T> addIfNotNull(String name, Object value) {
+        if (value != null) {
+            return add(name, value);
+        }
+        return this;
+    }
 }

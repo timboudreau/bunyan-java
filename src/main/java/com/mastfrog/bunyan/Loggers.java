@@ -55,7 +55,8 @@ public final class Loggers {
      * @param name The name of the logger
      * @return A log record
      */
+    @SuppressWarnings("unchecked")
     public <T extends LogLevel> Log<T> log(T level, String name) {
-        return logger(name).log(level);
+        return logger(name).<T>log(level);
     }
 }

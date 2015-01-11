@@ -1,20 +1,23 @@
 package com.mastfrog.bunyan;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import static com.mastfrog.bunyan.LoggingModule.SETTINGS_KEY_LOG_HOSTNAME;
+import static com.mastfrog.bunyan.LoggingModule.SETTINGS_KEY_LOG_LEVEL;
 import com.mastfrog.settings.Settings;
+import com.mastfrog.util.ConfigurationError;
 import com.mastfrog.util.collections.CollectionUtils;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.Arrays;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
 /**
- * Logging configuration.  Determines a few things
- * for loggers like the default level (controlled with the
- * setting <code>log.level</code> in the default 
+ * Logging configuration. Determines a few things for loggers like the default
+ * level (controlled with the setting <code>log.level</code> in the default
  * <a href="http://timboudreau.com/builds/job/mastfrog-parent/lastSuccessfulBuild/artifact/giulius-modules/giulius-parent/giulius-settings/target/apidocs/com/mastfrog/settings/Settings.html"><code>Settings</code></a>
  * injected by Guice.
  *
@@ -29,34 +32,43 @@ public class LoggingConfig {
     private final int minLevel;
     private final ObjectMapper mapper;
 
+    public static final String LEVEL_DEBUG = "debug";
+    public static final String LEVEL_INFO = "info";
+    public static final String LEVEL_FATAL = "fatal";
+    public static final String LEVEL_ERROR = "error";
+    public static final String LEVEL_WARNING = "warn";
+    public static final String LEVEL_TRACE = "trace";
+
     @Inject
     LoggingConfig(Settings settings, ObjectMapper mapper, LogWriter writer) throws IOException {
         this.settings = settings;
         hostname = hostname(settings);
-        String minLogLevel = settings.getString("log.level");
+        String minLogLevel = settings.getString(SETTINGS_KEY_LOG_LEVEL);
         int level = -1;
         if (minLogLevel != null) {
             switch (minLogLevel) {
-                case "debug":
+                case LEVEL_DEBUG:
                     level = 20;
                     break;
-                case "fatal":
+                case LEVEL_FATAL:
                     level = 60;
                     break;
-                case "error":
+                case LEVEL_ERROR:
                     level = 50;
                     break;
-                case "warn":
+                case LEVEL_WARNING:
                     level = 40;
                     break;
-                case "info":
+                case LEVEL_INFO:
                     level = 30;
                     break;
-                case "trace":
+                case LEVEL_TRACE:
                     level = 10;
                     break;
                 default:
-                //do nothing
+                    throw new ConfigurationError("Mysterious log level '" + minLogLevel
+                            + "' not one of " + Arrays.asList(LEVEL_DEBUG,
+                                    LEVEL_FATAL, LEVEL_ERROR, LEVEL_WARNING, LEVEL_INFO, LEVEL_TRACE));
             }
         }
         if (level == -1) {
@@ -80,7 +92,7 @@ public class LoggingConfig {
     }
 
     String hostname(Settings settings) {
-        String hostname = settings.getString("hostname");
+        String hostname = settings.getString(SETTINGS_KEY_LOG_HOSTNAME);
         if (hostname != null) {
             return hostname;
         }
@@ -145,7 +157,7 @@ public class LoggingConfig {
                 return check;
             }
         }
-        System.out.println("FOUND HOST NAME " + result);
+        System.err.println("FOUND HOST NAME " + result);
         return result;
     }
 

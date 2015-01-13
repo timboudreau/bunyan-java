@@ -138,12 +138,12 @@ public class SimpleLogWriter implements LogWriter {
         }
 
         void hook(ShutdownHookRegistry reg) {
-            reg.add(exe);
             reg.add(new Runnable() {
 
                 @Override
                 public void run() {
                     runner.stop();
+                    exe.shutdown();
                 }
             });
         }
@@ -166,18 +166,14 @@ public class SimpleLogWriter implements LogWriter {
                     writer.write(s);
                 }
                 strings.clear();
-                if (stopped) {
-                    return;
-                }
             }
 
             volatile boolean stopped;
-
             void stop() {
                 stopped = true;
-                if (thread != null) {
-                    thread.interrupt();
-                }
+//                if (thread != null) {
+//                    thread.interrupt();
+//                }
                 for (String s : queue) {
                     writer.write(s);
                 }
@@ -186,7 +182,6 @@ public class SimpleLogWriter implements LogWriter {
 
             @Override
             public void run() {
-//                Thread.currentThread().setDaemon(true);
                 Thread.currentThread().setName("Bunyan-Java Log flush");
                 Thread.currentThread().setPriority(Thread.NORM_PRIORITY - 2);
                 List<String> strings = new LinkedList<>();
@@ -197,7 +192,6 @@ public class SimpleLogWriter implements LogWriter {
                         if (stopped) {
                             return;
                         }
-                        ex.printStackTrace();
                     }
                 }
             }

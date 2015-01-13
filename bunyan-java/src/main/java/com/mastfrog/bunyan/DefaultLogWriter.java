@@ -33,7 +33,7 @@ final class DefaultLogWriter implements LogWriter {
         } else {
             w = new SimpleLogWriter();
         }
-        if (settings.getBoolean(SETTINGS_KEY_ASYNC_LOGGING, false)) {
+        if (settings.getBoolean(SETTINGS_KEY_ASYNC_LOGGING, true)) {
             w = SimpleLogWriter.async(w);
         }
         delegate = w;

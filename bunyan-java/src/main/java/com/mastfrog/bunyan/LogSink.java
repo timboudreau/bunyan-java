@@ -2,6 +2,7 @@ package com.mastfrog.bunyan;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.inject.name.Named;
 import com.mastfrog.bunyan.type.LogLevel;
 import java.util.Map;
 import java.util.logging.Level;
@@ -18,7 +19,7 @@ class LogSink {
     private final LogWriter writer;
 
     @Inject
-    LogSink(ObjectMapper mapper, LogWriter writer, LoggingConfig config) {
+    LogSink(@Named(LoggingModule.GUICE_BINDING_OBJECT_MAPPER) ObjectMapper mapper, LogWriter writer, LoggingConfig config) {
         this.mapper = mapper;
         this.writer = writer;
     }

@@ -7,13 +7,36 @@
         <version>1.6.0-dev</version>
         <relativePath/>
     </parent>
-    <artifactId>bunyan-java-parent</artifactId>
-    <name>Bunyan-Java (modules)</name>
-    <packaging>pom</packaging>
-    <modules>
-        <module>bunyan-java</module>
-        <module>acteur-bunyan-java</module>
-    </modules>
+    <artifactId>bunyan-java</artifactId>
+    <packaging>jar</packaging>
+    <dependencies>
+        <dependency>
+            <groupId>com.mastfrog</groupId>
+            <artifactId>giulius</artifactId>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>com.mastfrog</groupId>
+            <artifactId>jackson</artifactId>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>joda-time</groupId>
+            <artifactId>joda-time</artifactId>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>com.mastfrog</groupId>
+            <artifactId>giulius-tests</artifactId>
+            <scope>test</scope>
+            <type>jar</type>
+        </dependency>
+    </dependencies>
     <repositories>
         <repository>
             <id>timboudreau-builds</id>

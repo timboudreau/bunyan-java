@@ -1,6 +1,7 @@
 package com.mastfrog.bunyan;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.inject.name.Named;
 import static com.mastfrog.bunyan.LoggingModule.SETTINGS_KEY_LOG_HOSTNAME;
 import static com.mastfrog.bunyan.LoggingModule.SETTINGS_KEY_LOG_LEVEL;
 import com.mastfrog.settings.Settings;
@@ -26,7 +27,6 @@ import javax.inject.Singleton;
 @Singleton
 public class LoggingConfig {
 
-    private final Settings settings;
     private final String hostname;
     private final LogWriter writer;
     private final int minLevel;
@@ -39,9 +39,31 @@ public class LoggingConfig {
     public static final String LEVEL_WARNING = "warn";
     public static final String LEVEL_TRACE = "trace";
 
+    public static boolean checkLevelName(String level) {
+        switch (level) {
+            case LEVEL_TRACE:
+            case LEVEL_INFO:
+            case LEVEL_WARNING:
+            case LEVEL_ERROR:
+            case LEVEL_DEBUG:
+            case LEVEL_FATAL:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    public static void throwIfInvalidLevelName(String level) {
+        if (!checkLevelName(level)) {
+            throw new IllegalArgumentException("Invalid log level " + level + " - valid values are "
+                    + LEVEL_FATAL + "," + LEVEL_DEBUG + "," + LEVEL_INFO + "," + LEVEL_ERROR + ","
+                    + LEVEL_WARNING + " or" + LEVEL_TRACE);
+        }
+    }
+
     @Inject
-    LoggingConfig(Settings settings, ObjectMapper mapper, LogWriter writer) throws IOException {
-        this.settings = settings;
+    LoggingConfig(Settings settings, @Named(LoggingModule.GUICE_BINDING_OBJECT_MAPPER) ObjectMapper mapper, 
+            LogWriter writer) throws IOException {
         hostname = hostname(settings);
         String minLogLevel = settings.getString(SETTINGS_KEY_LOG_LEVEL);
         int level = -1;

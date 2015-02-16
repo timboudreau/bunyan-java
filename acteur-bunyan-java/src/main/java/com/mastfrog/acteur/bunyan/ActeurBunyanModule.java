@@ -49,6 +49,7 @@ public class ActeurBunyanModule extends AbstractModule {
     public static final String ERROR_LOGGER = "error";
     public static final String ACCESS_LOGGER = "requests";
     private String requestLoggerLevel = "debug";
+    private boolean bindErrorInterceptor = true;
 
     public ActeurBunyanModule() {
         this(true);
@@ -77,6 +78,11 @@ public class ActeurBunyanModule extends AbstractModule {
         this.requestLoggerLevel = level;
         return this;
     }
+    
+    public ActeurBunyanModule dontBindErrorInterceptor() {
+        bindErrorInterceptor = false;
+        return this;
+    }
 
     void checkLaunched() {
         if (launched) {
@@ -91,7 +97,9 @@ public class ActeurBunyanModule extends AbstractModule {
     protected void configure() {
         launched = true;
         install(loggingModule);
-        bind(ErrorInterceptor.class).to(ErrorH.class);
+        if (bindErrorInterceptor) {
+            bind(ErrorInterceptor.class).to(ErrorH.class);
+        }
         bind(RequestLogger.class).to(JsonRequestLogger.class);
         bind(String.class).annotatedWith(Names.named(GUICE_BINDING_REQUEST_LOGGER_LEVEL))
                 .toInstance(this.requestLoggerLevel);

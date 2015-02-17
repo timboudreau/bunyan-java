@@ -97,7 +97,7 @@ public class ActeurBunyanModule extends AbstractModule {
     protected void configure() {
         launched = true;
         install(loggingModule);
-        if (bindErrorInterceptor) {
+        if (bindErrorInterceptor && !Boolean.getBoolean("unit.test")) {
             bind(ErrorInterceptor.class).to(ErrorH.class);
         }
         bind(RequestLogger.class).to(JsonRequestLogger.class);

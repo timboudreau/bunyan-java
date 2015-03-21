@@ -58,7 +58,7 @@ public class BunyanJacksonConfig implements JacksonConfigurer {
         public void serialize(HttpResponseStatus t, JsonGenerator jg, SerializerProvider sp) throws IOException, JsonProcessingException {
             jg.writeStartObject();
             jg.writeFieldName("reason");
-            jg.writeString(t.reasonPhrase());
+            jg.writeString(t.reasonPhrase().toString());
             jg.writeFieldName("code");
             jg.writeNumber(t.code());;
             jg.writeEndObject();
@@ -194,11 +194,11 @@ public class BunyanJacksonConfig implements JacksonConfigurer {
             jg.writeEndObject();
             if (t.getHeader(Headers.REFERRER) != null) {
                 jg.writeFieldName("referrer");
-                jg.writeString(t.getHeader(Headers.REFERRER));
+                jg.writeString(t.getHeader(Headers.REFERRER).toString());
             }
             if (t.getHeader(Headers.USER_AGENT) != null) {
                 jg.writeFieldName("agent");
-                jg.writeString(t.getHeader(Headers.USER_AGENT));
+                jg.writeString(t.getHeader(Headers.USER_AGENT).toString());
             }
             jg.writeEndObject();
         }

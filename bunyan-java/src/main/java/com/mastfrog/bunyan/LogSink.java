@@ -1,36 +1,22 @@
 package com.mastfrog.bunyan;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.inject.name.Named;
+import com.google.inject.ImplementedBy;
 import com.mastfrog.bunyan.type.LogLevel;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.inject.Inject;
 
 /**
+ * Bind this instead of LogWriter if you want to receive log records as
+ * objects (say, for sending over the wire as BSON) instead of strings.
  *
  * @author Tim Boudreau
  */
-class LogSink {
-
-    private final ObjectMapper mapper;
-    private final LogWriter writer;
-
-    @Inject
-    LogSink(@Named(LoggingModule.GUICE_BINDING_OBJECT_MAPPER) ObjectMapper mapper, LogWriter writer, LoggingConfig config) {
-        this.mapper = mapper;
-        this.writer = writer;
-    }
-
-    void push(LogLevel level, Map<String, Object> log) {
-        try {
-            String s = mapper.writeValueAsString(log);
-            writer.write(s);
-        } catch (JsonProcessingException ex) {
-            // Give up
-            Logger.getLogger(LogSink.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
+@ImplementedBy(DefaultLogSink.class)
+public interface LogSink {
+    /**
+     * Called to write a new log record.  Must be thread-safe.
+     * 
+     * @param level The log level.
+     * @param logrecord The log record
+     */
+    void push(LogLevel level, Map<String, Object> logrecord);
 }

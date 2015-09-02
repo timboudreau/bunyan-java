@@ -171,14 +171,10 @@ public class SimpleLogWriter implements LogWriter {
             volatile boolean stopped;
             void stop() {
                 stopped = true;
-//                if (thread != null) {
-//                    thread.interrupt();
-//                }
                 for (String s : queue) {
                     writer.write(s);
                 }
             }
-            Thread thread;
 
             @Override
             public void run() {
@@ -188,6 +184,9 @@ public class SimpleLogWriter implements LogWriter {
                 for (;;) {
                     try {
                         flush(strings);
+                        if (stopped) {
+                            return;
+                        }
                     } catch (InterruptedException ex) {
                         if (stopped) {
                             return;

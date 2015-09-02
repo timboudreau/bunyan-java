@@ -28,7 +28,6 @@ import javax.inject.Singleton;
 public class LoggingConfig {
 
     private final String hostname;
-    private final LogWriter writer;
     private final int minLevel;
     private final ObjectMapper mapper;
 
@@ -62,8 +61,7 @@ public class LoggingConfig {
     }
 
     @Inject
-    LoggingConfig(Settings settings, @Named(LoggingModule.GUICE_BINDING_OBJECT_MAPPER) ObjectMapper mapper, 
-            LogWriter writer) throws IOException {
+    LoggingConfig(Settings settings, @Named(LoggingModule.GUICE_BINDING_OBJECT_MAPPER) ObjectMapper mapper) throws IOException {
         hostname = hostname(settings);
         String minLogLevel = settings.getString(SETTINGS_KEY_LOG_LEVEL);
         int level = -1;
@@ -98,15 +96,10 @@ public class LoggingConfig {
         }
         minLevel = level;
         this.mapper = mapper;
-        this.writer = writer;
     }
 
     ObjectMapper mapper() {
         return mapper;
-    }
-
-    LogWriter writer() {
-        return writer;
     }
 
     public String hostname() {

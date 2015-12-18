@@ -3,6 +3,7 @@ package com.mastfrog.bunyan;
 import static com.mastfrog.bunyan.LoggingModule.SETTINGS_KEY_ASYNC_LOGGING;
 import static com.mastfrog.bunyan.LoggingModule.SETTINGS_KEY_LOG_TO_CONSOLE;
 import static com.mastfrog.bunyan.LoggingModule.SETTINGS_KEY_LOG_FILE;
+import static com.mastfrog.bunyan.LoggingModule.SETTINGS_KEY_LOG_FILE_GZIPPED;
 import com.mastfrog.giulius.ShutdownHookRegistry;
 import com.mastfrog.settings.Settings;
 import java.io.File;
@@ -24,8 +25,9 @@ final class DefaultLogWriter implements LogWriter {
         String file = settings.getString(SETTINGS_KEY_LOG_FILE);
         LogWriter w;
         if (file != null) {
+            boolean gzip = settings.getBoolean(SETTINGS_KEY_LOG_FILE_GZIPPED, false);
             File f = new File(file);
-            w = SimpleLogWriter.forFile(f);
+            w = SimpleLogWriter.forFile(f, gzip);
             boolean consoleToo = settings.getBoolean(SETTINGS_KEY_LOG_TO_CONSOLE, false);
             if (consoleToo) {
                 w = SimpleLogWriter.combine(w, new SimpleLogWriter());

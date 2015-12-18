@@ -14,6 +14,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.zip.GZIPOutputStream;
 
 /**
  *
@@ -29,8 +30,8 @@ public class SimpleLogWriter implements LogWriter {
         return new Combined(writers);
     }
 
-    public static LogWriter forFile(File f) throws IOException {
-        return new FileWriter(f);
+    public static LogWriter forFile(File f, boolean gzip) throws IOException {
+        return new FileWriter(f, gzip);
     }
 
     public static LogWriter async(LogWriter writer) {
@@ -78,16 +79,21 @@ public class SimpleLogWriter implements LogWriter {
         private final File file;
         private final OutputStream out;
 
-        public FileWriter(File file) throws IOException {
+        public FileWriter(File file, boolean gzip) throws IOException {
             this.file = file;
             if (!file.exists()) {
                 if (!file.createNewFile()) {
                     throw new IOException("Could not create " + file);
                 }
             }
-            out = new BufferedOutputStream(new FileOutputStream(file, true));
+            OutputStream out = new BufferedOutputStream(new FileOutputStream(file, true), 1024);
+            if (gzip) {
+                out = new GZIPOutputStream(out, 1024, true);
+            }
+            this.out = out;
         }
 
+        @Override
         public String toString() {
             return "log file " + file;
         }
@@ -146,6 +152,9 @@ public class SimpleLogWriter implements LogWriter {
                     exe.shutdown();
                 }
             });
+            if (runner.writer instanceof SimpleLogWriter) {
+                ((SimpleLogWriter) runner.writer).hook(reg);
+            }
         }
 
         private static class Runner implements Runnable {

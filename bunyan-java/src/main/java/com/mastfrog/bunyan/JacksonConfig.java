@@ -68,12 +68,9 @@ public class JacksonConfig implements JacksonConfigurer {
             jg.writeEndArray();
             if (t.getCause() != null) {
                 jg.writeFieldName("cause");
-                jg.writeStartObject();
                 serialize(t.getCause(), jg, sp);
             }
             jg.writeEndObject();
         }
-
     }
-
 }

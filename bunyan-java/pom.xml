@@ -8,33 +8,27 @@
         <relativePath/>
     </parent>
     <artifactId>bunyan-java</artifactId>
-    <packaging>jar</packaging>
     <dependencies>
         <dependency>
             <groupId>com.mastfrog</groupId>
             <artifactId>giulius</artifactId>
-            <type>jar</type>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <type>jar</type>
         </dependency>
         <dependency>
             <groupId>com.mastfrog</groupId>
             <artifactId>jackson</artifactId>
-            <type>jar</type>
         </dependency>
         <dependency>
             <groupId>joda-time</groupId>
             <artifactId>joda-time</artifactId>
-            <type>jar</type>
         </dependency>
         <dependency>
             <groupId>com.mastfrog</groupId>
             <artifactId>giulius-tests</artifactId>
             <scope>test</scope>
-            <type>jar</type>
         </dependency>
     </dependencies>
     <repositories>
@@ -92,4 +86,23 @@
             </releases>
         </repository>
     </repositories>
+    <url>https://github.com/timboudreau/bunyan-java</url>
+    <scm>
+        <url>https://github.com/timboudreau/bunyan-java</url>
+        <connection>scm:git:https://github.com/timboudreau/bunyan-java.git</connection>
+        <developerConnection>git@github.com/timboudreau/bunyan-java.git</developerConnection>
+    </scm>
+    <licenses>
+        <license>
+            <name>MIT</name>
+            <url>http://opensource.org/licenses/MIT</url>
+        </license>
+    </licenses>
+    <developers>
+        <developer>
+            <name>Tim Boudreau</name>
+            <email>tim@timboudreau.com</email>
+            <url>https://timboudreau.com</url>
+        </developer>
+    </developers>
 </project>

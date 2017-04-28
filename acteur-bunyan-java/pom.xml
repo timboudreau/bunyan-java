@@ -4,20 +4,36 @@
     <parent>
         <groupId>com.mastfrog</groupId>
         <artifactId>bunyan-java-parent</artifactId>
-        <version>1.6.2</version>
+        <version>1.6.5</version>
     </parent>
     <artifactId>acteur-bunyan</artifactId>
-    <packaging>jar</packaging>
     <dependencies>
         <dependency>
             <groupId>com.mastfrog</groupId>
             <artifactId>bunyan-java</artifactId>
-            <type>jar</type>
         </dependency>
         <dependency>
             <groupId>com.mastfrog</groupId>
             <artifactId>acteur</artifactId>
-            <type>jar</type>
         </dependency>
     </dependencies>
+    <url>https://github.com/timboudreau/bunyan-java</url>
+    <scm>
+        <url>https://github.com/timboudreau/bunyan-java</url>
+        <connection>scm:git:https://github.com/timboudreau/bunyan-java.git</connection>
+        <developerConnection>git@github.com/timboudreau/bunyan-java.git</developerConnection>
+    </scm>
+    <licenses>
+        <license>
+            <name>MIT</name>
+            <url>http://opensource.org/licenses/MIT</url>
+        </license>
+    </licenses>
+    <developers>
+        <developer>
+            <name>Tim Boudreau</name>
+            <email>tim@timboudreau.com</email>
+            <url>https://timboudreau.com</url>
+        </developer>
+    </developers>
 </project>

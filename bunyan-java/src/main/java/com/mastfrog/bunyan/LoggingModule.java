@@ -20,6 +20,7 @@ public class LoggingModule extends AbstractModule {
     public static final String SETTINGS_KEY_LOG_HOSTNAME = "log.hostname";
     public static final String SETTINGS_KEY_ASYNC_LOGGING = "log.async";
     public static final String SETTINGS_KEY_LOG_TO_CONSOLE = "log.console";
+    public static final String SETTINGS_KEY_LOG_FILE_GZIPPED = "log.gzip";
 
     public static final String GUICE_BINDING_OBJECT_MAPPER = "bunyan-java";
     private final JacksonModule jacksonModule;

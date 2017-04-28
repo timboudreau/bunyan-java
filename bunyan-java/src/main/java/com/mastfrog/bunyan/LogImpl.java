@@ -87,9 +87,15 @@ class LogImpl<T extends LogLevel> implements Log<T> {
         return fmt.print(now);
     }
 
+    static int pid = -1;
     int pid() {
+        if (pid != -1) {
+            // Getting the pid is a high-cost call if a bunch of threads
+            // wind up locked in InetAddress.getLocalHost().
+            return pid;
+        }
         String name = ManagementFactory.getRuntimeMXBean().getName();
-        return Integer.parseInt(name.split("@")[0]);
+        return pid = Integer.parseInt(name.split("@")[0]);
     }
 
     @Override

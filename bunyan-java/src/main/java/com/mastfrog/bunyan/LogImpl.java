@@ -1,6 +1,7 @@
 package com.mastfrog.bunyan;
 
 import com.mastfrog.bunyan.type.LogLevel;
+import com.mastfrog.util.Checks;
 import com.mastfrog.util.collections.MapBuilder;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
@@ -43,6 +44,7 @@ class LogImpl<T extends LogLevel> implements Log<T> {
 
     @Override
     public Log<T> message(String msg) {
+        Checks.notNull("msg", msg);
         if (!level.isEnabled()) {
             return this;
         }
@@ -51,16 +53,18 @@ class LogImpl<T extends LogLevel> implements Log<T> {
     }
 
     @Override
-    public Log<T> add(Object o) {
+    public Log<T> add(Object object) {
+        Checks.notNull("object", object);
         if (!level.isEnabled()) {
             return this;
         }
-        m.add(o);
+        m.add(object);
         return this;
     }
 
     @Override
     public Log<T> add(String name, Object value) {
+        Checks.notNull("name", name);
         if (!level.isEnabled()) {
             return this;
         }
@@ -69,12 +73,13 @@ class LogImpl<T extends LogLevel> implements Log<T> {
     }
 
     @Override
-    public Log<T> add(Throwable t) {
+    public Log<T> add(Throwable error) {
+        Checks.notNull("error", error);
         if (!level.isEnabled()) {
             return this;
         }
-        m.add(Collections.singletonMap("error", t));
-        String msg = t.getMessage();
+        m.add(Collections.singletonMap("error", error));
+        String msg = error.getMessage();
         if (msg != null) {
             m.add(Collections.singletonMap("msg", msg));
         }
@@ -94,8 +99,13 @@ class LogImpl<T extends LogLevel> implements Log<T> {
             // wind up locked in InetAddress.getLocalHost().
             return pid;
         }
-        String name = ManagementFactory.getRuntimeMXBean().getName();
-        return pid = Integer.parseInt(name.split("@")[0]);
+        String beanName = ManagementFactory.getRuntimeMXBean().getName();
+        try {
+            return pid = Integer.parseInt(beanName.split("@")[0]);
+        } catch (NumberFormatException nfe) {
+            System.err.println("Could not find pid in '" + beanName + "'");
+            return pid = 0;
+        }
     }
 
     @Override

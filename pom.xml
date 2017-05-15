@@ -13,6 +13,7 @@
     <modules>
         <module>bunyan-java</module>
         <module>acteur-bunyan-java</module>
+        <module>bunyan-parse</module>
     </modules>
     <repositories>
         <repository>

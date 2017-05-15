@@ -43,24 +43,26 @@ import java.util.Map;
 public class TestIt {
 
     static final class M implements Module {
+
         @Override
         public void configure(Binder binder) {
             binder.bind(Path.class).toInstance(Paths.get(new File("/tmp/mf-old.log").toURI()));
         }
     }
 
+    @SuppressWarnings("unchecked")
     public static void main(String[] args) throws IOException {
         LoggingModule lm = new LoggingModule(false).withConfigurer((ObjectMapper om) -> om.registerModule(new JodaModule()));
         Dependencies deps = new Dependencies(SettingsBuilder.createDefault().build(), lm, new M());
         LogStreamFactory stream = deps.getInstance(LogStreamFactory.class);
-        
+
         stream.stream(LogFilter.named("main").and(LogFilter.propertyEquals("src", "Tex Stylucwellinson"))).forEachOrdered((t) -> {
             System.out.println(t.get("recs"));
         });
-        
+
         stream.read(LogFilter.named("ratings"), (t) -> {
             System.out.println(t);
-            Map<String,Object> recs = (Map<String,Object>) t.get("recs");
+            Map<String, Object> recs = (Map<String, Object>) t.get("recs");
             for (Map.Entry<String, Object> e : recs.entrySet()) {
                 System.out.println(e.getKey() + "\t" + e.getValue());
             }

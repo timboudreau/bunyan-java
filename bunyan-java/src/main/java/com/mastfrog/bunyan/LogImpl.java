@@ -1,3 +1,26 @@
+/*
+ * The MIT License
+ *
+ * Copyright 2015 Tim Boudreau.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 package com.mastfrog.bunyan;
 
 import com.mastfrog.bunyan.type.LogLevel;
@@ -30,7 +53,7 @@ class LogImpl<T extends LogLevel> implements Log<T> {
     private final LogSink sink;
     private final LoggingConfig config;
 
-    public LogImpl(String name, T level, LogSink sink, LoggingConfig config) {
+    LogImpl(String name, T level, LogSink sink, LoggingConfig config) {
         this.name = name;
         this.level = level;
         this.sink = sink;
@@ -45,9 +68,6 @@ class LogImpl<T extends LogLevel> implements Log<T> {
     @Override
     public Log<T> message(String msg) {
         Checks.notNull("msg", msg);
-        if (!level.isEnabled()) {
-            return this;
-        }
         m.add(Collections.singletonMap("msg", msg));
         return this;
     }
@@ -55,9 +75,6 @@ class LogImpl<T extends LogLevel> implements Log<T> {
     @Override
     public Log<T> add(Object object) {
         Checks.notNull("object", object);
-        if (!level.isEnabled()) {
-            return this;
-        }
         m.add(object);
         return this;
     }
@@ -65,9 +82,6 @@ class LogImpl<T extends LogLevel> implements Log<T> {
     @Override
     public Log<T> add(String name, Object value) {
         Checks.notNull("name", name);
-        if (!level.isEnabled()) {
-            return this;
-        }
         m.add(Collections.singletonMap(name, value));
         return this;
     }
@@ -75,9 +89,6 @@ class LogImpl<T extends LogLevel> implements Log<T> {
     @Override
     public Log<T> add(Throwable error) {
         Checks.notNull("error", error);
-        if (!level.isEnabled()) {
-            return this;
-        }
         m.add(Collections.singletonMap("error", error));
         String msg = error.getMessage();
         if (msg != null) {
@@ -86,14 +97,14 @@ class LogImpl<T extends LogLevel> implements Log<T> {
         return this;
     }
 
-    String formattedNow() {
+    static final DateTimeFormatter ISO_FORMAT = ISODateTimeFormat.dateTime();
+    static String formattedNow() {
         DateTime now = DateTime.now().withZone(DateTimeZone.UTC);
-        DateTimeFormatter fmt = ISODateTimeFormat.dateTime();
-        return fmt.print(now);
+        return ISO_FORMAT.print(now);
     }
 
     static int pid = -1;
-    int pid() {
+    static int pid() {
         if (pid != -1) {
             // Getting the pid is a high-cost call if a bunch of threads
             // wind up locked in InetAddress.getLocalHost().
@@ -190,5 +201,9 @@ class LogImpl<T extends LogLevel> implements Log<T> {
             return add(name, value);
         }
         return this;
+    }
+    
+    public String toString() {
+        return super.toString() + "{sink=" + sink + "}";
     }
 }

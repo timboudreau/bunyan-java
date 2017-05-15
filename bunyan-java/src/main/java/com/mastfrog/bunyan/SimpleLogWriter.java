@@ -1,3 +1,26 @@
+/*
+ * The MIT License
+ *
+ * Copyright 2015 Tim Boudreau.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 package com.mastfrog.bunyan;
 
 import com.mastfrog.giulius.ShutdownHookRegistry;
@@ -30,14 +53,18 @@ public class SimpleLogWriter implements LogWriter {
         return new Combined(writers);
     }
 
-    public static LogWriter forFile(File f, boolean gzip) throws IOException {
-        return new FileWriter(f, gzip);
+    public static LogWriter forFile(File f, boolean gzip, int bufferSize) throws IOException {
+        return new FileWriter(f, gzip, bufferSize);
     }
 
     public static LogWriter async(LogWriter writer) {
         return writer instanceof AsyncLogWriter ? (LogWriter) writer : new AsyncLogWriter(writer);
     }
 
+    public String toString() {
+        return "Console log writer";
+    }
+    
     void hook(ShutdownHookRegistry reg) {
 
     }
@@ -72,6 +99,17 @@ public class SimpleLogWriter implements LogWriter {
                 w.write(s);
             }
         }
+        
+        public String toString() {
+            StringBuilder sb = new StringBuilder("CombinedLogWriter[");
+            for (int i = 0; i < writers.length; i++) {
+                sb.append(writers[i]);
+                if (i != writers.length - 1) {
+                    sb.append(", ");
+                }
+            }
+            return sb.append(']').toString();
+        }
     }
 
     static class FileWriter extends SimpleLogWriter {
@@ -79,23 +117,22 @@ public class SimpleLogWriter implements LogWriter {
         private final File file;
         private final OutputStream out;
 
-        public FileWriter(File file, boolean gzip) throws IOException {
+        public FileWriter(File file, boolean gzip, int bufferSize) throws IOException {
+            if (bufferSize <= 0) {
+                bufferSize = 1024;
+            }
             this.file = file;
             if (!file.exists()) {
                 if (!file.createNewFile()) {
                     throw new IOException("Could not create " + file);
                 }
             }
-            OutputStream out = new BufferedOutputStream(new FileOutputStream(file, true), 1024);
+            OutputStream out = bufferSize == 1 ? new FileOutputStream(file, true) :
+                    new BufferedOutputStream(new FileOutputStream(file, true), bufferSize);
             if (gzip) {
-                out = new GZIPOutputStream(out, 1024, true);
+                out = new GZIPOutputStream(out, bufferSize, true);
             }
             this.out = out;
-        }
-
-        @Override
-        public String toString() {
-            return "log file " + file;
         }
 
         @Override
@@ -125,6 +162,10 @@ public class SimpleLogWriter implements LogWriter {
             } catch (IOException ex) {
                 Logger.getLogger(SimpleLogWriter.class.getName()).log(Level.SEVERE, null, ex);
             }
+        }
+        
+        public String toString() {
+            return "FileWriter{file=" + file + "}";
         }
     }
 
@@ -156,6 +197,10 @@ public class SimpleLogWriter implements LogWriter {
                 ((SimpleLogWriter) runner.writer).hook(reg);
             }
         }
+        
+        public String toString() {
+            return getClass().getName() + "{runner=" + runner + "}";
+        }
 
         private static class Runner implements Runnable {
 
@@ -183,6 +228,10 @@ public class SimpleLogWriter implements LogWriter {
                 for (String s : queue) {
                     writer.write(s);
                 }
+            }
+            
+            public String toString() {
+                return "AsyncRunner{writer=" + writer + "}";
             }
 
             @Override

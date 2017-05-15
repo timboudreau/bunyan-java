@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2017 Tim Boudreau.
+ * Copyright 2017 tim.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,20 +21,54 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.mastfrog.bunyan.parse;
+package com.mastfrog.bunyan;
 
-import java.util.function.Predicate;
+import com.mastfrog.bunyan.Log;
+import com.mastfrog.bunyan.type.LogLevel;
 
 /**
- * Checks that a line of JSON starts with a brace.
  *
  * @author Tim Boudreau
  */
-final class JsonHashCheck implements Predicate<String> {
+final class NullLogger<T extends LogLevel> implements Log<T> {
 
-    @Override
-    public boolean test(String t) {
-        return t.length() > 0 && t.charAt(0) == '{';
+    private final T level;
+
+    NullLogger(T level) {
+        this.level = level;
     }
 
+    @Override
+    public T level() {
+        return level;
+    }
+
+    @Override
+    public Log<T> message(String msg) {
+        return this;
+    }
+
+    @Override
+    public Log<T> add(Object o) {
+        return this;
+    }
+
+    @Override
+    public Log<T> add(String name, Object value) {
+        return this;
+    }
+
+    @Override
+    public Log<T> addIfNotNull(String name, Object value) {
+        return this;
+    }
+
+    @Override
+    public Log<T> add(Throwable t) {
+        return this;
+    }
+
+    @Override
+    public void close() {
+    }
 }

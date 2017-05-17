@@ -32,6 +32,7 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.mastfrog.jackson.JacksonConfigurer;
 import java.io.IOException;
+import javax.inject.Singleton;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -41,20 +42,18 @@ import org.openide.util.lookup.ServiceProvider;
  * @author Tim Boudreau
  */
 @ServiceProvider(service=JacksonConfigurer.class)
+@Singleton
 public class JacksonConfig implements JacksonConfigurer {
 
     @Override
     public ObjectMapper configure(ObjectMapper om) {
-        SimpleModule sm = new SimpleModule("mongo", new Version(1, 0, 0, null, "com.visitrend", "userserver"));
+        SimpleModule sm = new SimpleModule("mongo", new Version(1, 0, 0, null, "com.mastfrog", "throwables"));
         sm.addSerializer(new ThrowableSerializer());
         om.registerModule(sm);
         return om;
     }
 
     static class ThrowableSerializer extends JsonSerializer<Throwable> {
-
-        public ThrowableSerializer() {
-        }
 
         @Override
         public Class<Throwable> handledType() {
@@ -92,6 +91,18 @@ public class JacksonConfig implements JacksonConfigurer {
             if (t.getCause() != null) {
                 jg.writeFieldName("cause");
                 serialize(t.getCause(), jg, sp);
+            }
+            Throwable[] causes = t.getSuppressed();
+            if (causes != null && causes.length > 0) {
+                jg.writeFieldName("suppressed");
+                jg.writeStartArray();
+                try {
+                    for (Throwable tt : causes) {
+                        serialize(tt, jg, sp);
+                    }
+                } finally {
+                    jg.writeEndArray();
+                }
             }
             jg.writeEndObject();
         }

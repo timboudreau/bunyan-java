@@ -63,9 +63,9 @@ public class BenchmarkTest {
     @Test
     public void test(final Loggers loggers, final @Named("whoozie") Logger logger, Cleanup flean) throws InterruptedException {
         // For testing before/after optimizations
-//        if (true) {
-//            return;
-//        }
+        if (true) {
+            return;
+        }
         System.out.println("LOGGERS: " + loggers);
 
         try (Log<Fatal> log = logger.log(loggers.fatal)) {

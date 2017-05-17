@@ -32,6 +32,8 @@ import com.mastfrog.giulius.tests.TestWith;
 import com.mastfrog.jackson.JacksonModule;
 import com.mastfrog.util.collections.MapBuilder;
 import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
 import java.util.Map;
 import java.util.Random;
 import javax.inject.Inject;
@@ -64,7 +66,13 @@ public class LoggerTest {
                 log.add("ix", i);
             };
         }
-        thing.logger.debug(new IllegalStateException("Hoobie")).message("A bad thing happened").close();
+        IOException thingy = new IOException("Oops");
+        MalformedURLException supp1 = new MalformedURLException("hey");
+        IllegalAccessError supp2 = new IllegalAccessError("Huh?");
+        IllegalStateException hoobie = new IllegalStateException("Hoobie", thingy);
+        thingy.addSuppressed(supp1);
+        thingy.addSuppressed(supp2);
+        thing.logger.debug(hoobie).message("A bad thing happened").close();
     }
 
     private static class Thing {

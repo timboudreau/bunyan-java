@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2015 tim.
+ * Copyright 2015 Tim Boudreau.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -54,5 +54,14 @@ final class DefaultLogSink implements LogSink {
             // Give up
             java.util.logging.Logger.getLogger(LogSink.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+    
+    void rawWrite(String s) {
+        writer.write(s);
+    }
+    
+    @Override
+    public String toString() {
+        return super.toString() + "{writer=" + writer + "}";
     }
 }

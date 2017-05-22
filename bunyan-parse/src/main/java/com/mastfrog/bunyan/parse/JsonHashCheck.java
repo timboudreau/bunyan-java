@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2015 Tim Boudreau.
+ * Copyright 2017 Tim Boudreau.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,25 +21,20 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.mastfrog.bunyan;
+package com.mastfrog.bunyan.parse;
 
-import com.google.inject.ImplementedBy;
-import com.mastfrog.bunyan.type.LogLevel;
-import java.util.Map;
+import java.util.function.Predicate;
 
 /**
- * Bind this instead of LogWriter if you want to receive log records as
- * objects (say, for sending over the wire as BSON) instead of strings.
+ * Checks that a line of JSON starts with a brace.
  *
  * @author Tim Boudreau
  */
-@ImplementedBy(DefaultLogSink.class)
-public interface LogSink {
-    /**
-     * Called to write a new log record.  Must be thread-safe.
-     * 
-     * @param level The log level.
-     * @param logrecord The log record
-     */
-    void push(LogLevel level, Map<String, Object> logrecord);
+final class JsonHashCheck implements Predicate<String> {
+
+    @Override
+    public boolean test(String t) {
+        return t.length() > 0 && t.charAt(0) == '{';
+    }
+
 }

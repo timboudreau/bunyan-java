@@ -1,3 +1,26 @@
+/*
+ * The MIT License
+ *
+ * Copyright 2015 Tim Boudreau.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 package com.mastfrog.bunyan;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -86,9 +109,14 @@ public class LoggingConfig {
                     level = 10;
                     break;
                 default:
-                    throw new ConfigurationError("Mysterious log level '" + minLogLevel
-                            + "' not one of " + Arrays.asList(LEVEL_DEBUG,
-                                    LEVEL_FATAL, LEVEL_ERROR, LEVEL_WARNING, LEVEL_INFO, LEVEL_TRACE));
+                    try {
+                        level = Integer.parseInt(minLogLevel);
+                    } catch (NumberFormatException nfe) {
+                        throw new ConfigurationError("Mysterious log level '" + minLogLevel
+                                + "' not one of " + Arrays.asList(LEVEL_DEBUG,
+                                        LEVEL_FATAL, LEVEL_ERROR, LEVEL_WARNING, LEVEL_INFO, LEVEL_TRACE)
+                                + " and not an integer.");
+                    }
             }
         }
         if (level == -1) {
@@ -106,13 +134,17 @@ public class LoggingConfig {
         return hostname;
     }
 
+    private String foundHostName;
     String hostname(Settings settings) {
+        if (foundHostName != null) {
+            return foundHostName;
+        }
         String hostname = settings.getString(SETTINGS_KEY_LOG_HOSTNAME);
         if (hostname != null) {
-            return hostname;
+            return foundHostName = hostname;
         }
         try {
-            return InetAddress.getLocalHost().getHostName();
+            return this.foundHostName = InetAddress.getLocalHost().getHostName();
         } catch (UnknownHostException e) {
             try {
                 return findHostnameFromNetworkAddress(settings);

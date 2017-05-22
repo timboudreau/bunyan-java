@@ -1,6 +1,30 @@
+/*
+ * The MIT License
+ *
+ * Copyright 2015 Tim Boudreau.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 package com.mastfrog.bunyan;
 
 import com.mastfrog.bunyan.type.LogLevel;
+import com.mastfrog.util.Checks;
 import com.mastfrog.util.collections.MapBuilder;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
@@ -29,7 +53,7 @@ class LogImpl<T extends LogLevel> implements Log<T> {
     private final LogSink sink;
     private final LoggingConfig config;
 
-    public LogImpl(String name, T level, LogSink sink, LoggingConfig config) {
+    LogImpl(String name, T level, LogSink sink, LoggingConfig config) {
         this.name = name;
         this.level = level;
         this.sink = sink;
@@ -43,53 +67,56 @@ class LogImpl<T extends LogLevel> implements Log<T> {
 
     @Override
     public Log<T> message(String msg) {
-        if (!level.isEnabled()) {
-            return this;
-        }
+        Checks.notNull("msg", msg);
         m.add(Collections.singletonMap("msg", msg));
         return this;
     }
 
     @Override
-    public Log<T> add(Object o) {
-        if (!level.isEnabled()) {
-            return this;
-        }
-        m.add(o);
+    public Log<T> add(Object object) {
+        Checks.notNull("object", object);
+        m.add(object);
         return this;
     }
 
     @Override
     public Log<T> add(String name, Object value) {
-        if (!level.isEnabled()) {
-            return this;
-        }
+        Checks.notNull("name", name);
         m.add(Collections.singletonMap(name, value));
         return this;
     }
 
     @Override
-    public Log<T> add(Throwable t) {
-        if (!level.isEnabled()) {
-            return this;
-        }
-        m.add(Collections.singletonMap("error", t));
-        String msg = t.getMessage();
+    public Log<T> add(Throwable error) {
+        Checks.notNull("error", error);
+        m.add(Collections.singletonMap("error", error));
+        String msg = error.getMessage();
         if (msg != null) {
             m.add(Collections.singletonMap("msg", msg));
         }
         return this;
     }
 
-    String formattedNow() {
+    static final DateTimeFormatter ISO_FORMAT = ISODateTimeFormat.dateTime();
+    static String formattedNow() {
         DateTime now = DateTime.now().withZone(DateTimeZone.UTC);
-        DateTimeFormatter fmt = ISODateTimeFormat.dateTime();
-        return fmt.print(now);
+        return ISO_FORMAT.print(now);
     }
 
-    int pid() {
-        String name = ManagementFactory.getRuntimeMXBean().getName();
-        return Integer.parseInt(name.split("@")[0]);
+    static int pid = -1;
+    static int pid() {
+        if (pid != -1) {
+            // Getting the pid is a high-cost call if a bunch of threads
+            // wind up locked in InetAddress.getLocalHost().
+            return pid;
+        }
+        String beanName = ManagementFactory.getRuntimeMXBean().getName();
+        try {
+            return pid = Integer.parseInt(beanName.split("@")[0]);
+        } catch (NumberFormatException nfe) {
+            System.err.println("Could not find pid in '" + beanName + "'");
+            return pid = 0;
+        }
     }
 
     @Override
@@ -174,5 +201,9 @@ class LogImpl<T extends LogLevel> implements Log<T> {
             return add(name, value);
         }
         return this;
+    }
+    
+    public String toString() {
+        return super.toString() + "{sink=" + sink + "}";
     }
 }

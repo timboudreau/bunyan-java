@@ -1,17 +1,39 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * The MIT License
+ *
+ * Copyright 2015 Tim Boudreau.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
  */
-
 package com.mastfrog.bunyan;
 
 import com.mastfrog.bunyan.LoggerTest.LM;
+import static com.mastfrog.bunyan.LoggingModule.SETTINGS_KEY_LOG_FILE;
 import com.mastfrog.bunyan.type.Warn;
+import com.mastfrog.giulius.ShutdownHookRegistry;
 import com.mastfrog.giulius.tests.GuiceRunner;
 import com.mastfrog.giulius.tests.TestWith;
 import com.mastfrog.jackson.JacksonModule;
 import com.mastfrog.util.collections.MapBuilder;
+import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
 import java.util.Map;
 import java.util.Random;
 import javax.inject.Inject;
@@ -28,7 +50,7 @@ import org.junit.runner.RunWith;
 public class LoggerTest {
 
     @Test
-    public void test(Loggers loggers, Thing thing) throws InterruptedException {
+    public void test(Loggers loggers, Thing thing, Cleanup clean) throws InterruptedException {
         try (Log<Warn> log = thing.logger.warn("wunk").message("hoobie")) {
             log.add("foo", "bar");
             log.add("baz", 23);
@@ -44,7 +66,13 @@ public class LoggerTest {
                 log.add("ix", i);
             };
         }
-        thing.logger.debug(new IllegalStateException("Hoobie")).message("A bad thing happened").close();
+        IOException thingy = new IOException("Oops");
+        MalformedURLException supp1 = new MalformedURLException("hey");
+        IllegalAccessError supp2 = new IllegalAccessError("Huh?");
+        IllegalStateException hoobie = new IllegalStateException("Hoobie", thingy);
+        thingy.addSuppressed(supp1);
+        thingy.addSuppressed(supp2);
+        thing.logger.debug(hoobie).message("A bad thing happened").close();
     }
 
     private static class Thing {
@@ -68,6 +96,23 @@ public class LoggerTest {
 
         LM() {
             super.bindLogger("whoozie");
+        }
+    }
+
+    static final class Cleanup implements Runnable {
+
+        private final String logfile;
+
+        @Inject
+        Cleanup(@Named(SETTINGS_KEY_LOG_FILE) String logfile, ShutdownHookRegistry reg) {
+            this.logfile = logfile;
+            reg.add(this);
+        }
+
+        @Override
+        public void run() {
+            boolean result = new File(logfile).delete();
+            System.err.println("Deleted " + logfile + "? " + result);
         }
     }
 }

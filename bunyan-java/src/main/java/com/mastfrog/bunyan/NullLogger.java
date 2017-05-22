@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2015 Tim Boudreau.
+ * Copyright 2017 tim.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,23 +23,52 @@
  */
 package com.mastfrog.bunyan;
 
-import com.google.inject.ImplementedBy;
+import com.mastfrog.bunyan.Log;
 import com.mastfrog.bunyan.type.LogLevel;
-import java.util.Map;
 
 /**
- * Bind this instead of LogWriter if you want to receive log records as
- * objects (say, for sending over the wire as BSON) instead of strings.
  *
  * @author Tim Boudreau
  */
-@ImplementedBy(DefaultLogSink.class)
-public interface LogSink {
-    /**
-     * Called to write a new log record.  Must be thread-safe.
-     * 
-     * @param level The log level.
-     * @param logrecord The log record
-     */
-    void push(LogLevel level, Map<String, Object> logrecord);
+final class NullLogger<T extends LogLevel> implements Log<T> {
+
+    private final T level;
+
+    NullLogger(T level) {
+        this.level = level;
+    }
+
+    @Override
+    public T level() {
+        return level;
+    }
+
+    @Override
+    public Log<T> message(String msg) {
+        return this;
+    }
+
+    @Override
+    public Log<T> add(Object o) {
+        return this;
+    }
+
+    @Override
+    public Log<T> add(String name, Object value) {
+        return this;
+    }
+
+    @Override
+    public Log<T> addIfNotNull(String name, Object value) {
+        return this;
+    }
+
+    @Override
+    public Log<T> add(Throwable t) {
+        return this;
+    }
+
+    @Override
+    public void close() {
+    }
 }

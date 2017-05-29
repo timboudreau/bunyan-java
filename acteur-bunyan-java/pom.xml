@@ -4,7 +4,7 @@
     <parent>
         <groupId>com.mastfrog</groupId>
         <artifactId>bunyan-java-parent</artifactId>
-        <version>1.7.0-dev</version>
+        <version>1.7.0</version>
     </parent>
     <artifactId>acteur-bunyan</artifactId>
     <dependencies>

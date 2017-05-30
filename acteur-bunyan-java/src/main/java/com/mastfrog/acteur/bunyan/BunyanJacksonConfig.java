@@ -194,11 +194,11 @@ public class BunyanJacksonConfig implements JacksonConfigurer {
             jg.writeEndObject();
             if (t.getHeader(Headers.REFERRER) != null) {
                 jg.writeFieldName("referrer");
-                jg.writeString(t.getHeader(Headers.REFERRER));
+                jg.writeString(t.getHeader(Headers.REFERRER) + "");
             }
             if (t.getHeader(Headers.USER_AGENT) != null) {
                 jg.writeFieldName("agent");
-                jg.writeString(t.getHeader(Headers.USER_AGENT));
+                jg.writeString(t.getHeader(Headers.USER_AGENT) + "");
             }
             jg.writeEndObject();
         }

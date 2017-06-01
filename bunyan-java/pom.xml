@@ -22,10 +22,6 @@
             <artifactId>jackson</artifactId>
         </dependency>
         <dependency>
-            <groupId>joda-time</groupId>
-            <artifactId>joda-time</artifactId>
-        </dependency>
-        <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>giulius-tests</artifactId>
             <scope>test</scope>

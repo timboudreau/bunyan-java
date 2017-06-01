@@ -16,14 +16,14 @@ import com.mastfrog.acteur.util.RequestID;
 import com.mastfrog.jackson.JacksonConfigurer;
 import com.mastfrog.url.Path;
 import com.mastfrog.url.URL;
+import com.mastfrog.util.time.TimeUtil;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.time.ZonedDateTime;
 import java.util.Map;
 import java.util.regex.Pattern;
-import org.joda.time.DateTime;
-import org.openide.util.lookup.ServiceProvider;
 
 public class BunyanJacksonConfig implements JacksonConfigurer {
 
@@ -32,7 +32,7 @@ public class BunyanJacksonConfig implements JacksonConfigurer {
 
     @Override
     public ObjectMapper configure(ObjectMapper mapper) {
-        SimpleModule sm = new SimpleModule("specversion", new Version(1, 0, 0, null, "org.netbeans.modules", "SpecificationVersion"));
+        SimpleModule sm = new SimpleModule("bunyan", new Version(1, 0, 1, null, "com.mastfrog", "bunyan-java"));
         // For logging purposes, iso dates are more useful
         sm.addSerializer(new DateTimeSerializer());
         sm.addSerializer(inetSer);
@@ -42,7 +42,7 @@ public class BunyanJacksonConfig implements JacksonConfigurer {
         sm.addSerializer(new PathSerializer());
         sm.addSerializer(new UrlSerializer());
         sm.addSerializer(new ResponseStatusSerializer());
-        sm.addDeserializer(DateTime.class, new DateTimeDeserializer());
+        sm.addDeserializer(ZonedDateTime.class, new DateTimeDeserializer());
         mapper.registerModule(sm);
         return mapper;
     }
@@ -91,20 +91,20 @@ public class BunyanJacksonConfig implements JacksonConfigurer {
         }
     }
 
-    private static class DateTimeSerializer extends JsonSerializer<DateTime> {
+    private static class DateTimeSerializer extends JsonSerializer<ZonedDateTime> {
 
         @Override
-        public Class<DateTime> handledType() {
-            return DateTime.class;
+        public Class<ZonedDateTime> handledType() {
+            return ZonedDateTime.class;
         }
 
         @Override
-        public void serialize(DateTime t, JsonGenerator jg, SerializerProvider sp) throws IOException, JsonProcessingException {
-            jg.writeString(Headers.ISO2822DateFormat.print(t));
+        public void serialize(ZonedDateTime t, JsonGenerator jg, SerializerProvider sp) throws IOException, JsonProcessingException {
+            jg.writeString(Headers.ISO2822DateFormat.format(t));
         }
     }
 
-    private static class DateTimeDeserializer extends JsonDeserializer<DateTime> {
+    private static class DateTimeDeserializer extends JsonDeserializer<ZonedDateTime> {
 
         @Override
         public boolean isCachable() {
@@ -113,18 +113,18 @@ public class BunyanJacksonConfig implements JacksonConfigurer {
 
         @Override
         public Class<?> handledType() {
-            return DateTime.class;
+            return ZonedDateTime.class;
         }
 
         private static final Pattern NUMBERS = Pattern.compile("^\\d+$");
 
         @Override
-        public DateTime deserialize(JsonParser jp, DeserializationContext dc) throws IOException, JsonProcessingException {
+        public ZonedDateTime deserialize(JsonParser jp, DeserializationContext dc) throws IOException, JsonProcessingException {
             String string = jp.readValueAs(String.class);
             if (NUMBERS.matcher(string).matches()) {
-                return new DateTime(Long.parseLong(string));
+                return TimeUtil.fromUnixTimestamp(Long.parseLong(string));
             }
-            return Headers.ISO2822DateFormat.parseDateTime(string);
+            return ZonedDateTime.parse(string, Headers.ISO2822DateFormat);
         }
     }
 

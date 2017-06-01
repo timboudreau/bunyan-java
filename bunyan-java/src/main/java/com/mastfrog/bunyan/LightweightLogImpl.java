@@ -23,7 +23,6 @@
  */
 package com.mastfrog.bunyan;
 
-import static com.mastfrog.bunyan.LogImpl.ISO_FORMAT;
 import static com.mastfrog.bunyan.LogImpl.formattedNow;
 import static com.mastfrog.bunyan.LogImpl.pid;
 import com.mastfrog.bunyan.type.LogLevel;
@@ -32,13 +31,15 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.lang.reflect.Array;
 import java.text.DecimalFormat;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import org.joda.time.DateTime;
 
 /**
  * Pending:  Optimize me.
@@ -252,11 +253,11 @@ final class LightweightLogImpl<T extends LogLevel> implements Log<T> {
                 }
             }
             return sb.append(']');
-        } else if (o instanceof DateTime) {
-            DateTime dt = (DateTime) o;
-            return sb.append('"').append(ISO_FORMAT.print(dt)).append('"');
+        } else if (o instanceof ZonedDateTime) {
+            ZonedDateTime dt = (ZonedDateTime) o;
+            return sb.append('"').append(DateTimeFormatter.ISO_ZONED_DATE_TIME.format(dt)).append('"');
         } else if (o instanceof Date) {
-            DateTime dt = new DateTime(((Date)o).getTime());
+            ZonedDateTime dt = ((Date) o).toInstant().atZone(ZoneId.systemDefault());
             return toString(dt, sb);
         }
         String result;

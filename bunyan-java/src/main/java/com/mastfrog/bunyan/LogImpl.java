@@ -26,8 +26,11 @@ package com.mastfrog.bunyan;
 import com.mastfrog.bunyan.type.LogLevel;
 import com.mastfrog.util.Checks;
 import com.mastfrog.util.collections.MapBuilder;
+import com.mastfrog.util.time.TimeUtil;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -35,10 +38,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
-import org.joda.time.format.DateTimeFormatter;
-import org.joda.time.format.ISODateTimeFormat;
 
 /**
  *
@@ -97,10 +96,9 @@ class LogImpl<T extends LogLevel> implements Log<T> {
         return this;
     }
 
-    static final DateTimeFormatter ISO_FORMAT = ISODateTimeFormat.dateTime();
     static String formattedNow() {
-        DateTime now = DateTime.now().withZone(DateTimeZone.UTC);
-        return ISO_FORMAT.print(now);
+        ZonedDateTime now = ZonedDateTime.now().withZoneSameInstant(ZoneId.of("GMT"));
+        return TimeUtil.toHttpHeaderFormat(now);
     }
 
     static int pid = -1;

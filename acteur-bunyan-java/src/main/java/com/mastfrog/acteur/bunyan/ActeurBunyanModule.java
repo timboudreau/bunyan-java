@@ -172,7 +172,7 @@ public class ActeurBunyanModule extends AbstractModule {
                 default:
                     throw new AssertionError(level);
             }
-            log.add("dur", rid.getDuration().getMillis()).add("status", status.code()).close();
+            log.add("dur", rid.getDuration().toMillis()).add("status", status.code()).close();
         }
     }
 

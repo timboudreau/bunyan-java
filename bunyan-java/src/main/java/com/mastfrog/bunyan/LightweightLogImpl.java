@@ -27,6 +27,7 @@ import static com.mastfrog.bunyan.LogImpl.formattedNow;
 import static com.mastfrog.bunyan.LogImpl.pid;
 import com.mastfrog.bunyan.type.LogLevel;
 import com.mastfrog.util.Checks;
+import com.mastfrog.util.strings.AppendableCharSequence;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.lang.reflect.Array;
@@ -37,12 +38,13 @@ import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
 /**
- * Pending:  Optimize me.
+ * Pending: Optimize me.
  *
  * @author Tim Boudreau
  */
@@ -57,8 +59,7 @@ final class LightweightLogImpl<T extends LogLevel> implements Log<T> {
     private String msg = "";
     private int last = -1;
     private static final int INCREMENT = 10;
-    private String[] keys = new String[INCREMENT];
-    private Object[] vals = new Object[INCREMENT];
+    private final Map<String, Object> contents = new LinkedHashMap<>();
 
     static final List<String> FORBIDDEN = Arrays.asList("hostname", "level", "msg", "pid", "time", "v");
 
@@ -71,11 +72,11 @@ final class LightweightLogImpl<T extends LogLevel> implements Log<T> {
         this.sink = sink;
         this.config = config;
     }
-    
+
     LogImpl<T> toPlainImpl() {
         LogImpl<T> li = new LogImpl<>(name, level, sink, config);
-        for (int i = 0; i < keys.length; i++) {
-            li.add(keys[i], vals[i]);
+        for (Map.Entry<String, Object> e : contents.entrySet()) {
+            li.add(e.getKey(), e.getValue());
         }
         return li;
     }
@@ -91,16 +92,6 @@ final class LightweightLogImpl<T extends LogLevel> implements Log<T> {
             this.msg = msg;
         }
         return this;
-    }
-
-    private void maybeGrow() {
-        assert keys.length == vals.length;
-        if (last == keys.length - 1) {
-            String[] newKeys = new String[keys.length + INCREMENT];
-            String[] newVals = new String[vals.length + INCREMENT];
-            System.arraycopy(keys, 0, newKeys, 0, keys.length);
-            System.arraycopy(vals, 0, newVals, 0, vals.length);
-        }
     }
 
     @Override
@@ -126,10 +117,8 @@ final class LightweightLogImpl<T extends LogLevel> implements Log<T> {
     @Override
     public Log<T> add(String name, Object value) {
         Checks.notNull("name", name);
-        checkValue(value);
-        maybeGrow();
-        keys[++last] = name;
-        vals[last] = value;
+//        checkValue(value);
+        contents.put(name, value);
         return this;
     }
 
@@ -183,7 +172,7 @@ final class LightweightLogImpl<T extends LogLevel> implements Log<T> {
 
     @Override
     public void close() {
-        StringBuilder sb = new StringBuilder(680).append('{');
+        AppendableCharSequence sb = new AppendableCharSequence(60).append('{');
         sb.append('"').append("name").append('"').append(':').append('"');
         toString(name, sb);
         sb.append(',').append("msg").append('"').append(':');
@@ -195,24 +184,22 @@ final class LightweightLogImpl<T extends LogLevel> implements Log<T> {
         sb.append("\"hostname\":");
         toString(config.hostname(), sb);
         sb.append(',');
-        for (int i = 0; i < keys.length; i++) {
-            if (keys[i] == null) {
-                break;
-            }
-            toString(keys[i], sb);
+        for (Iterator<Map.Entry<String, Object>> it = contents.entrySet().iterator(); it.hasNext();) {
+            Map.Entry<String, Object> e = it.next();
+            toString(e.getKey(), sb);
             sb.append(':');
-            toString(vals[i], sb);
-            if (i + 1 != keys.length && keys[i + 1] != null) {
+            toString(e.getValue(), sb);
+            if (it.hasNext()) {
                 sb.append(',');
             }
         }
-        sb.append("\n");
-        ((DefaultLogSink) sink).rawWrite(sb.toString());
+        sb.append('\n');
+        ((DefaultLogSink) sink).rawWrite(sb);
     }
 
     private static final DecimalFormat FMT = new DecimalFormat("##################.####################");
 
-    private StringBuilder toString(Object o, StringBuilder sb) {
+    private AppendableCharSequence toString(Object o, AppendableCharSequence sb) {
         if (o == null) {
             return sb.append("null");
         } else if (o instanceof Integer || o instanceof Short || o instanceof Byte || o instanceof Long || o instanceof Boolean) {
@@ -236,7 +223,7 @@ final class LightweightLogImpl<T extends LogLevel> implements Log<T> {
             return sb.append('}');
         } else if (o instanceof List<?>) {
             sb.append('[');
-            for (Iterator<?> it=((List<?>) o).iterator(); it.hasNext();) {
+            for (Iterator<?> it = ((List<?>) o).iterator(); it.hasNext();) {
                 toString(it.next(), sb);
                 if (it.hasNext()) {
                     sb.append(',');
@@ -248,7 +235,7 @@ final class LightweightLogImpl<T extends LogLevel> implements Log<T> {
             sb.append('[');
             for (int i = 0; i < max; i++) {
                 toString(Array.get(o, i), sb);
-                if (i != max-1) {
+                if (i != max - 1) {
                     sb.append(',');
                 }
             }

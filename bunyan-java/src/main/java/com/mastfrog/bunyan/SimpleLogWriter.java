@@ -30,6 +30,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetEncoder;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -45,7 +49,7 @@ import java.util.zip.GZIPOutputStream;
  */
 public class SimpleLogWriter implements LogWriter {
 
-    public void write(String s) {
+    public void write(CharSequence s) {
         System.out.println(s);
     }
 
@@ -94,7 +98,7 @@ public class SimpleLogWriter implements LogWriter {
         }
 
         @Override
-        public void write(String s) {
+        public void write(CharSequence s) {
             for (LogWriter w : writers) {
                 w.write(s);
             }
@@ -116,6 +120,7 @@ public class SimpleLogWriter implements LogWriter {
 
         private final File file;
         private final OutputStream out;
+        private static final Charset charset = Charset.forName("UTF-8");
 
         public FileWriter(File file, boolean gzip, int bufferSize) throws IOException {
             if (bufferSize <= 0) {
@@ -137,24 +142,22 @@ public class SimpleLogWriter implements LogWriter {
 
         @Override
         void hook(ShutdownHookRegistry reg) {
-            reg.add(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        out.flush();
-                        out.close();
-                    } catch (IOException ex) {
-                        Logger.getLogger(SimpleLogWriter.class.getName()).log(Level.SEVERE, null, ex);
-                    }
+            reg.add(() -> {
+                try {
+                    out.flush();
+                    out.close();
+                } catch (IOException ex) {
+                    Logger.getLogger(SimpleLogWriter.class.getName()).log(Level.SEVERE, null, ex);
                 }
-
             });
         }
 
         @Override
-        public void write(String s) {
+        public void write(CharSequence s) {
             try {
-                out.write(s.getBytes("UTF-8"));
+                CharsetEncoder enc = charset.newEncoder();
+                ByteBuffer buf = enc.encode(CharBuffer.wrap(s));
+                out.write(buf.array());
                 out.write('\n');
                 out.flush();
             } catch (UnsupportedEncodingException ex) {
@@ -171,7 +174,7 @@ public class SimpleLogWriter implements LogWriter {
 
     static class AsyncLogWriter extends SimpleLogWriter {
 
-        private final LinkedBlockingQueue<String> queue = new LinkedBlockingQueue<String>();
+        private final LinkedBlockingQueue<CharSequence> queue = new LinkedBlockingQueue<>();
         private final ExecutorService exe = Executors.newSingleThreadExecutor();
         private final Runner runner;
 
@@ -180,7 +183,7 @@ public class SimpleLogWriter implements LogWriter {
         }
 
         @Override
-        public void write(String s) {
+        public void write(CharSequence s) {
             queue.offer(s);
         }
 
@@ -204,19 +207,19 @@ public class SimpleLogWriter implements LogWriter {
 
         private static class Runner implements Runnable {
 
-            private final LinkedBlockingQueue<String> queue;
+            private final LinkedBlockingQueue<CharSequence> queue;
             private final LogWriter writer;
 
-            public Runner(LinkedBlockingQueue<String> queue, LogWriter writer) {
+            public Runner(LinkedBlockingQueue<CharSequence> queue, LogWriter writer) {
                 this.queue = queue;
                 this.writer = writer;
             }
 
-            void flush(List<String> strings) throws InterruptedException {
-                String first = queue.take();
+            void flush(List<CharSequence> strings) throws InterruptedException {
+                CharSequence first = queue.take();
                 strings.add(first);
                 queue.drainTo(strings);
-                for (String s : strings) {
+                for (CharSequence s : strings) {
                     writer.write(s);
                 }
                 strings.clear();
@@ -225,7 +228,7 @@ public class SimpleLogWriter implements LogWriter {
             volatile boolean stopped;
             void stop() {
                 stopped = true;
-                for (String s : queue) {
+                for (CharSequence s : queue) {
                     writer.write(s);
                 }
             }
@@ -238,7 +241,7 @@ public class SimpleLogWriter implements LogWriter {
             public void run() {
                 Thread.currentThread().setName("Bunyan-Java Log flush");
                 Thread.currentThread().setPriority(Thread.NORM_PRIORITY - 2);
-                List<String> strings = new LinkedList<>();
+                List<CharSequence> strings = new LinkedList<>();
                 for (;;) {
                     try {
                         flush(strings);

@@ -25,7 +25,10 @@ package com.mastfrog.bunyan;
 
 import com.mastfrog.bunyan.type.LogLevel;
 import com.mastfrog.util.Checks;
+import com.mastfrog.util.collections.CollectionUtils;
 import com.mastfrog.util.collections.MapBuilder;
+import com.mastfrog.util.collections.MapBuilder2;
+import com.mastfrog.util.strings.AppendableCharSequence;
 import com.mastfrog.util.time.TimeUtil;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
@@ -36,6 +39,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -122,9 +126,9 @@ class LogImpl<T extends LogLevel> implements Log<T> {
         if (!level.isEnabled()) {
             return;
         }
-        StringBuilder msg = new StringBuilder();
+        AppendableCharSequence msg = new AppendableCharSequence(60);
         List<Object> stuff = new LinkedList<>(m);
-        MapBuilder mb = new MapBuilder();
+        MapBuilder2<String,Object> mb = CollectionUtils.map();
         for (Iterator<Object> it = stuff.iterator(); it.hasNext();) {
             Object o = it.next();
             CharSequence s = null;
@@ -134,7 +138,7 @@ class LogImpl<T extends LogLevel> implements Log<T> {
                 s = (CharSequence) o;
                 it.remove();
             } else if (o instanceof Boolean || o instanceof Number) {
-                s = "" + o;
+                s = o.toString();
             } else if (o instanceof Map) {
                 Map<?, ?> m = ((Map) o);
                 for (Map.Entry<?, ?> e : m.entrySet()) {
@@ -143,10 +147,11 @@ class LogImpl<T extends LogLevel> implements Log<T> {
                         if (ob instanceof CharSequence) {
                             s = (CharSequence) ob;
                         } else {
-                            mb.put("_msg", ob);
+                            mb.map("_msg").to(ob);
                         }
                     } else {
-                        mb.put("" + e.getKey(), e.getValue());
+                        Object key = e.getKey();
+                        mb.map(Objects.toString(key)).to(e.getValue());
                     }
                 }
 
@@ -155,13 +160,13 @@ class LogImpl<T extends LogLevel> implements Log<T> {
                 List<?> l = (List<?>) o;
                 int sz = l.size();
                 for (int i = 0; i < sz; i++) {
-                    mb.put(i + "", l.get(i));
+                    mb.map(Integer.toString(i)).to(l.get(i));
                 }
             } else {
                 try {
                     Map<?, ?> mm = config.mapper().readValue(config.mapper().writeValueAsBytes(o), Map.class);
                     for (Map.Entry<?, ?> e : mm.entrySet()) {
-                        mb.put("" + e.getKey(), e.getValue());
+                        mb.map(Objects.toString(e.getKey())).to(e.getValue());
                     }
                 } catch (IOException ex) {
                     Logger.getLogger(LogImpl.class.getName()).log(Level.SEVERE, null, ex);
@@ -171,7 +176,7 @@ class LogImpl<T extends LogLevel> implements Log<T> {
                 Map<?, ?> m = (Map) o;
                 for (Map.Entry<?, ?> e : m.entrySet()) {
                     if (!"msg".equals(e.getKey())) {
-                        mb.put(e.getKey() + "", e.getValue());
+                        mb.map(Objects.toString(e.getKey())).to(e.getValue());
                     }
                 }
             }
@@ -183,13 +188,13 @@ class LogImpl<T extends LogLevel> implements Log<T> {
             }
         }
 
-        mb.put("name", name)
-                .put("msg", msg)
-                .put("v", 0)
-                .put("time", formattedNow())
-                .put("pid", pid())
-                .put("level", level.ordinal())
-                .put("hostname", config.hostname());
+        mb.map("name").to(name)
+                .map("msg").to(msg)
+                .map("v").to(0)
+                .map("time").to(formattedNow())
+                .map("pid").to(pid())
+                .map("level").to(level.ordinal())
+                .map("hostname").to(config.hostname());
         sink.push(level, mb.build());
     }
 

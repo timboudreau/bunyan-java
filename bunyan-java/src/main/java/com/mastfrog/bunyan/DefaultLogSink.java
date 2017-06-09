@@ -21,7 +21,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
 package com.mastfrog.bunyan;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -56,7 +55,7 @@ final class DefaultLogSink implements LogSink {
         }
     }
     
-    void rawWrite(String s) {
+    void rawWrite(CharSequence s) {
         writer.write(s);
     }
     

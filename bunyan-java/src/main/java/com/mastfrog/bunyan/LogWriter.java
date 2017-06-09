@@ -33,5 +33,5 @@ import com.google.inject.ImplementedBy;
 @ImplementedBy(DefaultLogWriter.class)
 public interface LogWriter {
 
-    public void write(String s);
+    public void write(CharSequence s);
 }

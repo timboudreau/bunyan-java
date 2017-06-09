@@ -175,30 +175,30 @@ public class BunyanJacksonConfig implements JacksonConfigurer {
         public void serialize(HttpEvent t, JsonGenerator jg, SerializerProvider sp) throws IOException, JsonProcessingException {
             jg.writeStartObject();
             jg.writeFieldName("path");
-            jg.writeString(t.getPath().toString());
+            jg.writeString(t.path().toString());
             jg.writeFieldName("address");
-            SocketAddress addr = t.getRemoteAddress();
+            SocketAddress addr = t.remoteAddress();
             if (addr instanceof InetSocketAddress) {
                 inetSer.serialize((InetSocketAddress) addr, jg, sp);
             } else {
                 socketSer.serialize(addr, jg, sp);
             }
             jg.writeFieldName("method");
-            jg.writeString(t.getMethod().name());
+            jg.writeString(t.method().name());
             jg.writeFieldName("params");
             jg.writeStartObject();
-            for (Map.Entry<String, String> e : t.getParametersAsMap().entrySet()) {
+            for (Map.Entry<String, String> e : t.urlParametersAsMap().entrySet()) {
                 jg.writeFieldName(e.getKey());
                 jg.writeString(e.getValue());
             }
             jg.writeEndObject();
-            if (t.getHeader(Headers.REFERRER) != null) {
+            if (t.header(Headers.REFERRER) != null) {
                 jg.writeFieldName("referrer");
-                jg.writeString(t.getHeader(Headers.REFERRER) + "");
+                jg.writeString(t.header(Headers.REFERRER) + "");
             }
-            if (t.getHeader(Headers.USER_AGENT) != null) {
+            if (t.header(Headers.USER_AGENT) != null) {
                 jg.writeFieldName("agent");
-                jg.writeString(t.getHeader(Headers.USER_AGENT) + "");
+                jg.writeString(t.header(Headers.USER_AGENT) + "");
             }
             jg.writeEndObject();
         }

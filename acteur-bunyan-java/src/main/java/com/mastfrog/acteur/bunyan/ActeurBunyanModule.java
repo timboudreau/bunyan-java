@@ -136,11 +136,14 @@ public class ActeurBunyanModule extends AbstractModule {
 
         private final Logger logger;
         private final String level;
+        private final RequestLogRecordDecorator decorator;
 
         @Inject
-        JsonRequestLogger(@Named(ACCESS_LOGGER) Logger logger, @Named(GUICE_BINDING_REQUEST_LOGGER_LEVEL) String level) {
+        JsonRequestLogger(@Named(ACCESS_LOGGER) Logger logger, @Named(GUICE_BINDING_REQUEST_LOGGER_LEVEL) String level,
+                RequestLogRecordDecorator decorator) {
             this.logger = logger;
             this.level = level;
+            this.decorator = decorator;
         }
 
         @Override
@@ -172,6 +175,7 @@ public class ActeurBunyanModule extends AbstractModule {
                 default:
                     throw new AssertionError(level);
             }
+            decorator.decorate(log, event, status, rid);
             log.add("dur", rid.getDuration().toMillis()).add("status", status.code()).close();
         }
     }

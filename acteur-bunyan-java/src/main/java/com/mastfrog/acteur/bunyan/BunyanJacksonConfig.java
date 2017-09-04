@@ -10,14 +10,17 @@ import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.mastfrog.acteur.Event;
 import com.mastfrog.acteur.HttpEvent;
 import com.mastfrog.acteur.headers.Headers;
 import com.mastfrog.acteur.util.RequestID;
 import com.mastfrog.jackson.JacksonConfigurer;
 import com.mastfrog.url.Path;
 import com.mastfrog.url.URL;
+import com.mastfrog.util.Strings;
 import com.mastfrog.util.time.TimeUtil;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import io.netty.handler.codec.http.websocketx.WebSocketFrame;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
@@ -38,6 +41,7 @@ public class BunyanJacksonConfig implements JacksonConfigurer {
         sm.addSerializer(inetSer);
         sm.addSerializer(socketSer);
         sm.addSerializer(new HttpEventSerializer());
+        sm.addSerializer(new EventSerializer());
         sm.addSerializer(new RequestIDSerializer());
         sm.addSerializer(new PathSerializer());
         sm.addSerializer(new UrlSerializer());
@@ -164,6 +168,40 @@ public class BunyanJacksonConfig implements JacksonConfigurer {
         }
     }
 
+    private static final HttpEventSerializer HTTP = new HttpEventSerializer();
+
+    @SuppressWarnings("unchecked")
+    private static final class EventSerializer extends JsonSerializer<Event> {
+
+        public Class<Event> handledType() {
+            return Event.class;
+        }
+
+        @Override
+        @SuppressWarnings("unchecked")
+        public void serialize(Event t, JsonGenerator jg, SerializerProvider sp) throws IOException, JsonProcessingException {
+            if (t instanceof HttpEvent) {
+                HTTP.serialize((HttpEvent) t, jg, sp);
+            } else {
+                jg.writeStartObject();
+                jg.writeStringField("type", t.getClass().getSimpleName());
+                SocketAddress addr = t.remoteAddress();
+                jg.writeFieldName("address");
+                if (addr instanceof InetSocketAddress) {
+                    inetSer.serialize((InetSocketAddress) addr, jg, sp);
+                } else {
+                    socketSer.serialize(addr, jg, sp);
+                }
+                jg.writeNumberField("len", t.content().readableBytes());
+                if (t.request() instanceof WebSocketFrame) {
+                    WebSocketFrame wsf = (WebSocketFrame) t.request();
+                    jg.writeBooleanField("ff", wsf.isFinalFragment());
+                }
+                jg.writeEndObject();
+            }
+        }
+    }
+
     private static final class HttpEventSerializer extends JsonSerializer<HttpEvent> {
 
         @Override
@@ -185,16 +223,22 @@ public class BunyanJacksonConfig implements JacksonConfigurer {
             }
             jg.writeFieldName("method");
             jg.writeString(t.method().name());
-            jg.writeFieldName("params");
-            jg.writeStartObject();
-            for (Map.Entry<String, String> e : t.urlParametersAsMap().entrySet()) {
-                jg.writeFieldName(e.getKey());
-                jg.writeString(e.getValue());
+
+            if (Strings.contains('?', t.request().uri())) {
+                jg.writeFieldName("params");
+                jg.writeStartObject();
+                for (Map.Entry<String, String> e : t.urlParametersAsMap().entrySet()) {
+                    jg.writeFieldName(e.getKey());
+                    jg.writeString(e.getValue());
+                }
+                jg.writeEndObject();
             }
-            jg.writeEndObject();
             if (t.header(Headers.REFERRER) != null) {
                 jg.writeFieldName("referrer");
-                jg.writeString(t.header(Headers.REFERRER) + "");
+                jg.writeString(t.header(Headers.REFERRER).toString());
+            }
+            if (t.header(Headers.HOST) != null) {
+                jg.writeStringField("host", t.header(Headers.HOST).toString());
             }
             if (t.header(Headers.USER_AGENT) != null) {
                 jg.writeFieldName("agent");

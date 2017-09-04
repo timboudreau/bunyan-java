@@ -157,7 +157,7 @@ public class SimpleLogWriter implements LogWriter {
             try {
                 CharsetEncoder enc = charset.newEncoder();
                 ByteBuffer buf = enc.encode(CharBuffer.wrap(s));
-                out.write(buf.array());
+                out.write(buf.array(), 0, buf.remaining());
                 out.write('\n');
                 out.flush();
             } catch (UnsupportedEncodingException ex) {

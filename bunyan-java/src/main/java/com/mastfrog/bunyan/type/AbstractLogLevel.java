@@ -26,6 +26,7 @@ package com.mastfrog.bunyan.type;
 import com.mastfrog.bunyan.Log;
 import com.mastfrog.bunyan.Loggers;
 import com.mastfrog.bunyan.LoggingConfig;
+import com.mastfrog.util.Checks;
 import javax.inject.Provider;
 
 /**
@@ -48,6 +49,7 @@ abstract class AbstractLogLevel<T extends LogLevel> implements LogLevel<T> {
 
     @SuppressWarnings("unchecked")
     public Log<T> log(String name) {
+        Checks.notNull("name", name);
         return loggers.get().<T>log((T) this, name);
     }
 

@@ -26,18 +26,19 @@ package com.mastfrog.bunyan;
 import com.mastfrog.bunyan.type.LogLevel;
 import com.mastfrog.util.Checks;
 import com.mastfrog.util.collections.CollectionUtils;
-import com.mastfrog.util.collections.MapBuilder;
 import com.mastfrog.util.collections.MapBuilder2;
 import com.mastfrog.util.strings.AppendableCharSequence;
-import com.mastfrog.util.time.TimeUtil;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.logging.Level;
@@ -48,6 +49,15 @@ import java.util.logging.Logger;
  * @author Tim Boudreau
  */
 class LogImpl<T extends LogLevel> implements Log<T> {
+
+    public static final DateTimeFormatter ISO_INSTANT;
+
+    static {
+        ISO_INSTANT = new DateTimeFormatterBuilder()
+                .parseCaseInsensitive()
+                .appendInstant()
+                .toFormatter(Locale.US);
+    }
 
     private final String name;
 
@@ -102,10 +112,11 @@ class LogImpl<T extends LogLevel> implements Log<T> {
 
     static String formattedNow() {
         ZonedDateTime now = ZonedDateTime.now().withZoneSameInstant(ZoneId.of("GMT"));
-        return TimeUtil.toHttpHeaderFormat(now);
+        return ISO_INSTANT.format(now);
     }
 
     static int pid = -1;
+
     static int pid() {
         if (pid != -1) {
             // Getting the pid is a high-cost call if a bunch of threads
@@ -128,7 +139,7 @@ class LogImpl<T extends LogLevel> implements Log<T> {
         }
         AppendableCharSequence msg = new AppendableCharSequence(60);
         List<Object> stuff = new LinkedList<>(m);
-        MapBuilder2<String,Object> mb = CollectionUtils.map();
+        MapBuilder2<String, Object> mb = CollectionUtils.map();
         for (Iterator<Object> it = stuff.iterator(); it.hasNext();) {
             Object o = it.next();
             CharSequence s = null;
@@ -205,7 +216,7 @@ class LogImpl<T extends LogLevel> implements Log<T> {
         }
         return this;
     }
-    
+
     public String toString() {
         return super.toString() + "{sink=" + sink + "}";
     }

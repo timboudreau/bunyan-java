@@ -28,8 +28,11 @@ import com.google.inject.Provider;
 import com.google.inject.name.Names;
 import com.mastfrog.jackson.JacksonConfigurer;
 import com.mastfrog.jackson.JacksonModule;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 
 /**
  *
@@ -79,6 +82,15 @@ public class LoggingModule extends AbstractModule {
      */
     public static final String GUICE_BINDING_OBJECT_MAPPER = "bunyan-java";
     private final JacksonModule jacksonModule;
+
+    public static final DateTimeFormatter ISO_INSTANT;
+
+    static {
+        ISO_INSTANT = new DateTimeFormatterBuilder()
+                .parseCaseInsensitive()
+                .appendInstant()
+                .toFormatter(Locale.US);
+    }
 
     public LoggingModule() {
         this(true);

@@ -23,6 +23,7 @@
  */
 package com.mastfrog.bunyan;
 
+import static com.mastfrog.bunyan.LoggingModule.ISO_INSTANT;
 import com.mastfrog.bunyan.type.LogLevel;
 import com.mastfrog.util.Checks;
 import com.mastfrog.util.collections.CollectionUtils;
@@ -32,13 +33,10 @@ import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.logging.Level;
@@ -49,15 +47,6 @@ import java.util.logging.Logger;
  * @author Tim Boudreau
  */
 class LogImpl<T extends LogLevel> implements Log<T> {
-
-    public static final DateTimeFormatter ISO_INSTANT;
-
-    static {
-        ISO_INSTANT = new DateTimeFormatterBuilder()
-                .parseCaseInsensitive()
-                .appendInstant()
-                .toFormatter(Locale.US);
-    }
 
     private final String name;
 

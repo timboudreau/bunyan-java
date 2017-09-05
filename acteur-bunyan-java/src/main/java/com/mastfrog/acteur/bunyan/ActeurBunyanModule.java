@@ -78,7 +78,7 @@ public class ActeurBunyanModule extends AbstractModule {
         this.requestLoggerLevel = level;
         return this;
     }
-    
+
     public ActeurBunyanModule dontBindErrorInterceptor() {
         bindErrorInterceptor = false;
         return this;
@@ -148,6 +148,7 @@ public class ActeurBunyanModule extends AbstractModule {
 
         @Override
         public void onBeforeEvent(RequestID rid, Event<?> event) {
+            // do nothing
         }
 
         @Override
@@ -176,7 +177,10 @@ public class ActeurBunyanModule extends AbstractModule {
                     throw new AssertionError(level);
             }
             decorator.decorate(log, event, status, rid);
-            log.add("dur", rid.getDuration().toMillis()).add("status", status.code()).close();
+            log.add("id", rid.stringValue())
+                    .add("dur", rid.getDuration().toMillis())
+                    .add("status", status.code())
+                    .close();
         }
     }
 

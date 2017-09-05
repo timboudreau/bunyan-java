@@ -14,6 +14,7 @@ import com.mastfrog.acteur.Event;
 import com.mastfrog.acteur.HttpEvent;
 import com.mastfrog.acteur.headers.Headers;
 import com.mastfrog.acteur.util.RequestID;
+import com.mastfrog.bunyan.LoggingModule;
 import com.mastfrog.jackson.JacksonConfigurer;
 import com.mastfrog.url.Path;
 import com.mastfrog.url.URL;
@@ -32,6 +33,8 @@ public class BunyanJacksonConfig implements JacksonConfigurer {
 
     static final InetSocketAddressSerializer inetSer = new InetSocketAddressSerializer();
     static final SocketAddressSerializer socketSer = new SocketAddressSerializer();
+    static final HttpEventSerializer HTTP = new HttpEventSerializer();
+
 
     @Override
     public ObjectMapper configure(ObjectMapper mapper) {
@@ -40,13 +43,14 @@ public class BunyanJacksonConfig implements JacksonConfigurer {
         sm.addSerializer(new DateTimeSerializer());
         sm.addSerializer(inetSer);
         sm.addSerializer(socketSer);
-        sm.addSerializer(new HttpEventSerializer());
+        sm.addSerializer(HTTP);
         sm.addSerializer(new EventSerializer());
         sm.addSerializer(new RequestIDSerializer());
         sm.addSerializer(new PathSerializer());
         sm.addSerializer(new UrlSerializer());
         sm.addSerializer(new ResponseStatusSerializer());
         sm.addDeserializer(ZonedDateTime.class, new DateTimeDeserializer());
+        sm.addSerializer(new RequestIDSerializer());
         mapper.registerModule(sm);
         return mapper;
     }
@@ -104,7 +108,7 @@ public class BunyanJacksonConfig implements JacksonConfigurer {
 
         @Override
         public void serialize(ZonedDateTime t, JsonGenerator jg, SerializerProvider sp) throws IOException, JsonProcessingException {
-            jg.writeString(Headers.ISO2822DateFormat.format(t));
+            jg.writeString(LoggingModule.ISO_INSTANT.format(t));
         }
     }
 
@@ -128,7 +132,7 @@ public class BunyanJacksonConfig implements JacksonConfigurer {
             if (NUMBERS.matcher(string).matches()) {
                 return TimeUtil.fromUnixTimestamp(Long.parseLong(string));
             }
-            return ZonedDateTime.parse(string, Headers.ISO2822DateFormat);
+            return ZonedDateTime.parse(string, LoggingModule.ISO_INSTANT);
         }
     }
 
@@ -167,8 +171,6 @@ public class BunyanJacksonConfig implements JacksonConfigurer {
 //            jg.writeEndObject();
         }
     }
-
-    private static final HttpEventSerializer HTTP = new HttpEventSerializer();
 
     @SuppressWarnings("unchecked")
     private static final class EventSerializer extends JsonSerializer<Event> {

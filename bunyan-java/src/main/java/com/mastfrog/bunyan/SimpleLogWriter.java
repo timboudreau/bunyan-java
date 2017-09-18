@@ -59,7 +59,7 @@ public class SimpleLogWriter implements LogWriter {
     }
 
     public static LogWriter forFile(File f, boolean gzip, int bufferSize) throws IOException {
-        return new FileWriter(f, gzip, bufferSize);
+        return !gzip ? new NioFileWriter(f, false, bufferSize) : new FileWriter(f, gzip, bufferSize);
     }
 
     public static LogWriter async(LogWriter writer) {
@@ -186,6 +186,9 @@ public class SimpleLogWriter implements LogWriter {
         }
 
         void hook(ShutdownHookRegistry reg) {
+            if (runner.writer instanceof SimpleLogWriter) {
+                ((SimpleLogWriter) runner.writer).hook(reg);
+            }
             reg.add(new Runnable() {
 
                 @Override
@@ -194,9 +197,6 @@ public class SimpleLogWriter implements LogWriter {
                     exe.shutdown();
                 }
             });
-            if (runner.writer instanceof SimpleLogWriter) {
-                ((SimpleLogWriter) runner.writer).hook(reg);
-            }
         }
 
         public String toString() {

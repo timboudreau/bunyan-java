@@ -8,6 +8,30 @@
         <relativePath/>
     </parent>
     <artifactId>bunyan-java</artifactId>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.20</version>
+                <configuration>
+                    <parallelMavenExecution>false</parallelMavenExecution>
+                    <reuseForks>false</reuseForks>
+                    <parallel>none</parallel>
+                    <threadCount>0</threadCount>
+                    <forkMode>never</forkMode>
+                    <forkCount>0</forkCount>
+                    <trimStackTrace>false</trimStackTrace>
+                    <useFile>false</useFile>                    
+<!--                    <parallelMavenExecution>true</parallelMavenExecution>
+                    <perCoreThreadCount>4</perCoreThreadCount>
+                    <threadCount>8</threadCount>
+                    <reuseForks>true</reuseForks>
+                    <trimStackTrace>false</trimStackTrace>-->
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
     <dependencies>
         <dependency>
             <groupId>${project.groupId}</groupId>

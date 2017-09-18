@@ -138,6 +138,13 @@ public class LoggingModule extends AbstractModule {
         return this;
     }
 
+    /**
+     * The default log sink class.  If you want to, say, log to MongoDB and also
+     * want to log to the console, you would bind your own LogSink subclass, but
+     * may also to be able to get an instance that logs to the console.
+     */
+    public static final Class<? extends LogSink> DEFAULT_LOG_SINK = DefaultLogSink.class;
+
     @Override
     protected void configure() {
         for (String s : loggers) {

@@ -36,29 +36,34 @@ import javax.inject.Inject;
  * @author Tim Boudreau
  */
 final class DefaultLogSink implements LogSink {
+
     private final ObjectMapper mapper;
     private final LogWriter writer;
 
     @Inject
     DefaultLogSink(@Named(LoggingModule.GUICE_BINDING_OBJECT_MAPPER) ObjectMapper mapper, LogWriter writer, LoggingConfig config) {
         this.mapper = mapper;
-        this.writer = writer;
+        this.writer = writer instanceof DefaultLogWriter ? ((DefaultLogWriter) writer).delegate : writer;
     }
 
     public void push(LogLevel level, Map<String, Object> log) {
         try {
-            String s = mapper.writeValueAsString(log);
-            writer.write(s);
+            if (writer instanceof LogWriter.Bytes) {
+                ((LogWriter.Bytes) writer).write(mapper.writeValueAsBytes(log));
+            } else {
+                String s = mapper.writeValueAsString(log);
+                writer.write(s);
+            }
         } catch (JsonProcessingException ex) {
             // Give up
             java.util.logging.Logger.getLogger(LogSink.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
+
     void rawWrite(CharSequence s) {
         writer.write(s);
     }
-    
+
     @Override
     public String toString() {
         return super.toString() + "{writer=" + writer + "}";

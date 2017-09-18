@@ -42,7 +42,7 @@ import javax.inject.Singleton;
 @Singleton
 final class DefaultLogWriter implements LogWriter {
 
-    private final LogWriter delegate;
+    final LogWriter delegate;
 
     @Inject
     DefaultLogWriter(Settings settings, ShutdownHookRegistry reg) throws IOException {

@@ -36,6 +36,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -68,7 +69,7 @@ public class SimpleLogWriter implements LogWriter {
     public String toString() {
         return "Console log writer";
     }
-    
+
     void hook(ShutdownHookRegistry reg) {
 
     }
@@ -103,7 +104,7 @@ public class SimpleLogWriter implements LogWriter {
                 w.write(s);
             }
         }
-        
+
         public String toString() {
             StringBuilder sb = new StringBuilder("CombinedLogWriter[");
             for (int i = 0; i < writers.length; i++) {
@@ -132,8 +133,8 @@ public class SimpleLogWriter implements LogWriter {
                     throw new IOException("Could not create " + file);
                 }
             }
-            OutputStream out = bufferSize == 1 ? new FileOutputStream(file, true) :
-                    new BufferedOutputStream(new FileOutputStream(file, true), bufferSize);
+            OutputStream out = bufferSize == 1 ? new FileOutputStream(file, true)
+                    : new BufferedOutputStream(new FileOutputStream(file, true), bufferSize);
             if (gzip) {
                 out = new GZIPOutputStream(out, bufferSize, true);
             }
@@ -142,13 +143,10 @@ public class SimpleLogWriter implements LogWriter {
 
         @Override
         void hook(ShutdownHookRegistry reg) {
-            reg.add(() -> {
-                try {
-                    out.flush();
-                    out.close();
-                } catch (IOException ex) {
-                    Logger.getLogger(SimpleLogWriter.class.getName()).log(Level.SEVERE, null, ex);
-                }
+            reg.add((Callable<?>) () -> {
+                out.flush();
+                out.close();
+                return null;
             });
         }
 
@@ -166,7 +164,7 @@ public class SimpleLogWriter implements LogWriter {
                 Logger.getLogger(SimpleLogWriter.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-        
+
         public String toString() {
             return "FileWriter{file=" + file + "}";
         }
@@ -200,7 +198,7 @@ public class SimpleLogWriter implements LogWriter {
                 ((SimpleLogWriter) runner.writer).hook(reg);
             }
         }
-        
+
         public String toString() {
             return getClass().getName() + "{runner=" + runner + "}";
         }
@@ -226,13 +224,14 @@ public class SimpleLogWriter implements LogWriter {
             }
 
             volatile boolean stopped;
+
             void stop() {
                 stopped = true;
                 for (CharSequence s : queue) {
                     writer.write(s);
                 }
             }
-            
+
             public String toString() {
                 return "AsyncRunner{writer=" + writer + "}";
             }

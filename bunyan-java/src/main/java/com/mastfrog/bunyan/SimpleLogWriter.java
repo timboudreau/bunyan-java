@@ -24,6 +24,8 @@
 package com.mastfrog.bunyan;
 
 import com.mastfrog.giulius.ShutdownHookRegistry;
+import com.mastfrog.util.thread.AtomicLinkedQueue;
+import com.mastfrog.util.thread.OneThreadLatch;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -39,7 +41,6 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.GZIPOutputStream;
@@ -172,30 +173,28 @@ public class SimpleLogWriter implements LogWriter {
 
     static class AsyncLogWriter extends SimpleLogWriter {
 
-        private final LinkedBlockingQueue<CharSequence> queue = new LinkedBlockingQueue<>();
+        private final AtomicLinkedQueue<CharSequence> queue = new AtomicLinkedQueue<>();
         private final ExecutorService exe = Executors.newSingleThreadExecutor();
         private final Runner runner;
+        private final OneThreadLatch latch = new OneThreadLatch();
 
         AsyncLogWriter(LogWriter writer) {
-            exe.submit(runner = new Runner(queue, writer));
+            exe.submit(runner = new Runner(queue, writer, latch));
+            queue.onAdd(latch);
         }
 
         @Override
         public void write(CharSequence s) {
-            queue.offer(s);
+            queue.add(s);
         }
 
         void hook(ShutdownHookRegistry reg) {
             if (runner.writer instanceof SimpleLogWriter) {
                 ((SimpleLogWriter) runner.writer).hook(reg);
             }
-            reg.add(new Runnable() {
-
-                @Override
-                public void run() {
-                    runner.stop();
-                    exe.shutdown();
-                }
+            reg.add((Runnable) () -> {
+                runner.stop();
+                exe.shutdown();
             });
         }
 
@@ -205,17 +204,17 @@ public class SimpleLogWriter implements LogWriter {
 
         private static class Runner implements Runnable {
 
-            private final LinkedBlockingQueue<CharSequence> queue;
+            private final AtomicLinkedQueue<CharSequence> queue;
             private final LogWriter writer;
+            private final OneThreadLatch latch;
 
-            public Runner(LinkedBlockingQueue<CharSequence> queue, LogWriter writer) {
+            public Runner(AtomicLinkedQueue<CharSequence> queue, LogWriter writer, OneThreadLatch latch) {
                 this.queue = queue;
                 this.writer = writer;
+                this.latch = latch;
             }
 
             void flush(List<CharSequence> strings) throws InterruptedException {
-                CharSequence first = queue.take();
-                strings.add(first);
                 queue.drainTo(strings);
                 for (CharSequence s : strings) {
                     writer.write(s);
@@ -227,8 +226,10 @@ public class SimpleLogWriter implements LogWriter {
 
             void stop() {
                 stopped = true;
-                for (CharSequence s : queue) {
-                    writer.write(s);
+                try {
+                    flush(new LinkedList<>());
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(SimpleLogWriter.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
 
@@ -243,6 +244,7 @@ public class SimpleLogWriter implements LogWriter {
                 List<CharSequence> strings = new LinkedList<>();
                 for (;;) {
                     try {
+                        latch.await();
                         flush(strings);
                         if (stopped) {
                             return;

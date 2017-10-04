@@ -50,6 +50,11 @@
             <artifactId>giulius-tests</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>bunyan-parse</artifactId>
+            <scope>test</scope>
+        </dependency>        
     </dependencies>
     <repositories>
         <repository>

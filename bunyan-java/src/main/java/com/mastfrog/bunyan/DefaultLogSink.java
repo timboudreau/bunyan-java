@@ -30,11 +30,13 @@ import com.mastfrog.bunyan.type.LogLevel;
 import java.util.Map;
 import java.util.logging.Level;
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
 /**
  *
  * @author Tim Boudreau
  */
+@Singleton
 final class DefaultLogSink implements LogSink {
 
     private final ObjectMapper mapper;

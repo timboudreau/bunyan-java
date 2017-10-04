@@ -24,10 +24,9 @@
 
 package com.mastfrog.bunyan;
 
-import com.google.common.collect.Lists;
 import com.mastfrog.giulius.ShutdownHookRegistry;
+import com.mastfrog.util.thread.BufferPool;
 import com.mastfrog.util.thread.FactoryThreadLocal;
-import com.mastfrog.util.thread.QuietAutoCloseable;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -38,11 +37,8 @@ import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
 import java.nio.charset.CoderResult;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -93,7 +89,7 @@ class NioFileWriter extends SimpleLogWriter implements Callable<Void>, LogWriter
         try {
             int pos = 0;
             try (final BufferPool.BufferHolder q = pool.buffer()) {
-                ByteBuffer buffer = q.buf;
+                ByteBuffer buffer = q.buffer();
                 while (pos < bytes.length) {
                     int remaining = bytes.length - pos;
                     int bufferRemaining = buffer.capacity() - buffer.position();
@@ -136,73 +132,6 @@ class NioFileWriter extends SimpleLogWriter implements Callable<Void>, LogWriter
         }
     }
 
-    static final class BufferPool {
-
-        private final List<BufferHolder> buffers;
-        private final AtomicInteger inUseCount = new AtomicInteger();
-        private volatile boolean hasWaiter;
-        private final int bufferSize;
-
-        BufferPool(int bufferSize) {
-            buffers = Lists.newCopyOnWriteArrayList();
-            this.bufferSize = bufferSize;
-        }
-
-        public BufferHolder buffer() {
-            for (BufferHolder bh : buffers) {
-                if (bh.open()) {
-                    return bh;
-                }
-            }
-            BufferHolder nue = new BufferHolder();
-            nue.open();
-            buffers.add(nue);
-            return nue;
-        }
-
-        List<ByteBuffer> awaitQuiet() throws InterruptedException {
-            hasWaiter = true;
-            int count = 0;
-            while (inUseCount.get() > 0 && count++ < 5000) {
-                synchronized (this) {
-                    wait(5);
-                }
-            }
-            List<ByteBuffer> all = new ArrayList<>(buffers.size());
-            for (BufferHolder h : buffers) {
-                if (h.buf.position() > 0) {
-                    all.add(h.buf);
-                }
-            }
-            return all;
-        }
-
-        final class BufferHolder extends QuietAutoCloseable {
-
-            final ByteBuffer buf = ByteBuffer.allocateDirect(bufferSize);
-            private final AtomicBoolean inUse = new AtomicBoolean(false);
-
-            boolean open() {
-                if (inUse.compareAndSet(false, true)) {
-                    inUseCount.incrementAndGet();
-                    return true;
-                }
-                return false;
-            }
-
-            @Override
-            public void close() {
-                inUse.set(false);
-                int numInUse = inUseCount.decrementAndGet();
-                if (numInUse == 0 && hasWaiter) {
-                    synchronized (this) {
-                        notifyAll();
-                    }
-                }
-            }
-        }
-    }
-
     void flushBuffer(ByteBuffer buffer, CharsetEncoder enc, boolean finished) throws IOException {
         if (finished) {
             enc.flush(buffer);
@@ -222,7 +151,7 @@ class NioFileWriter extends SimpleLogWriter implements Callable<Void>, LogWriter
         CharBuffer cb = toCharBuffer(s);
         CoderResult res = CoderResult.OVERFLOW;
         try (final BufferPool.BufferHolder q = pool.buffer()) {
-            ByteBuffer buffer = q.buf;
+            ByteBuffer buffer = q.buffer();
             while (res == CoderResult.OVERFLOW) {
                 res = enc.encode(cb, buffer, true);
                 if (res == CoderResult.OVERFLOW) {
@@ -252,7 +181,7 @@ class NioFileWriter extends SimpleLogWriter implements Callable<Void>, LogWriter
                 buf.flip();
                 channel.write(buf);
             }
-            pool.buffers.clear();
+            pool.close();
             channel.force(true);
         } catch (InterruptedException ex) {
             Logger.getLogger(SimpleLogWriter.class.getName()).log(Level.SEVERE, null, ex);

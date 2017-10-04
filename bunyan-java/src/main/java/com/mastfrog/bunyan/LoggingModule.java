@@ -50,13 +50,13 @@ public class LoggingModule extends AbstractModule {
      */
     public static final String SETTINGS_KEY_LOG_LEVEL = "log.level";
     /**
-     * Settings key for the host name used in log records (if not set,
-     * will be gotten from the system).
+     * Settings key for the host name used in log records (if not set, will be
+     * gotten from the system).
      */
     public static final String SETTINGS_KEY_LOG_HOSTNAME = "log.hostname";
     /**
-     * Settings key - if true, log records are buffered and written by a background thread;
-     * more performant but may result in data loss on crash.
+     * Settings key - if true, log records are buffered and written by a
+     * background thread; more performant but may result in data loss on crash.
      */
     public static final String SETTINGS_KEY_ASYNC_LOGGING = "log.async";
     /**
@@ -69,16 +69,16 @@ public class LoggingModule extends AbstractModule {
      */
     public static final String SETTINGS_KEY_LOG_FILE_GZIPPED = "log.gzip";
     /**
-     * Settings key for the buffer size for output (and gzip) streams that
-     * are written to when logging.  A value &lt:1 uses the default of 
-     * 1024;  a value of 1 means no buffering.
+     * Settings key for the buffer size for output (and gzip) streams that are
+     * written to when logging. A value &lt:1 uses the default of 1024; a value
+     * of 1 means no buffering.
      */
     public static final String SETTINGS_KEY_STREAM_BUFFER_SIZE = "log.buffer";
 
     /**
-     * Name used by the Named annotation to identify the ObjectMapper that
-     * will be injected into loggers.  If unusual objects are to be serialized
-     * into log records, it will need to be configured to handle them.
+     * Name used by the Named annotation to identify the ObjectMapper that will
+     * be injected into loggers. If unusual objects are to be serialized into
+     * log records, it will need to be configured to handle them.
      */
     public static final String GUICE_BINDING_OBJECT_MAPPER = "bunyan-java";
     private final JacksonModule jacksonModule;
@@ -98,11 +98,11 @@ public class LoggingModule extends AbstractModule {
 
     /**
      * Create a new logging modules.
-     * 
-     * @param useMetaInfServicesJacksonConfigurers If true, use the Java 
-     * Extension Mechanism to look up JacksonConfigurers on the classpath,
-     * which will be used to configure the ObjectMapper used to render log
-     * records as JSON.
+     *
+     * @param useMetaInfServicesJacksonConfigurers If true, use the Java
+     * Extension Mechanism to look up JacksonConfigurers on the classpath, which
+     * will be used to configure the ObjectMapper used to render log records as
+     * JSON.
      */
     public LoggingModule(boolean useMetaInfServicesJacksonConfigurers) {
         jacksonModule = new JacksonModule(GUICE_BINDING_OBJECT_MAPPER, useMetaInfServicesJacksonConfigurers)
@@ -110,9 +110,9 @@ public class LoggingModule extends AbstractModule {
     }
 
     /**
-     * Add the name of a logger that should be bound, which can be
-     * injected using the Named annotation.
-     * 
+     * Add the name of a logger that should be bound, which can be injected
+     * using the Named annotation.
+     *
      * @param name The name of the logger
      * @return This
      */
@@ -124,12 +124,11 @@ public class LoggingModule extends AbstractModule {
     }
 
     /**
-     * Include a particular JacksonConfigurer to configure the 
-     * ObjectMapper used to serialize log lines.  Note that you will
-     * write broken logs if you use any pretty-printing options that split
-     * lines here - this is why we have a separate Guice binding for this
-     * mapper.
-     * 
+     * Include a particular JacksonConfigurer to configure the ObjectMapper used
+     * to serialize log lines. Note that you will write broken logs if you use
+     * any pretty-printing options that split lines here - this is why we have a
+     * separate Guice binding for this mapper.
+     *
      * @param configurer The configurer.
      * @return This
      */
@@ -139,11 +138,18 @@ public class LoggingModule extends AbstractModule {
     }
 
     /**
-     * The default log sink class.  If you want to, say, log to MongoDB and also
+     * The default log sink class. If you want to, say, log to MongoDB and also
      * want to log to the console, you would bind your own LogSink subclass, but
      * may also to be able to get an instance that logs to the console.
      */
     public static final Class<? extends LogSink> DEFAULT_LOG_SINK = DefaultLogSink.class;
+
+    private boolean bindMultiLogSink;
+
+    public LoggingModule bindMultiLogSink() {
+        bindMultiLogSink = true;
+        return this;
+    }
 
     @Override
     protected void configure() {
@@ -152,6 +158,9 @@ public class LoggingModule extends AbstractModule {
                     .toProvider(new LoggerProvider(s, binder().getProvider(Loggers.class)));
         }
         install(jacksonModule);
+        if(bindMultiLogSink) {
+            bind(LogSink.class).to(MultiLogSink.class).asEagerSingleton();
+        }
     }
 
     private static class LoggerProvider implements Provider<Logger> {

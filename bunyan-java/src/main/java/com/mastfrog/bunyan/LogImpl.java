@@ -33,9 +33,9 @@ import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -51,9 +51,10 @@ class LogImpl<T extends LogLevel> implements Log<T> {
     private final String name;
 
     private final T level;
-    private final List<Object> m = new LinkedList<>();
+    private final List<Object> m = new ArrayList<>(10);
     private final LogSink sink;
     private final LoggingConfig config;
+    private final String now = formattedNow();
 
     LogImpl(String name, T level, LogSink sink, LoggingConfig config) {
         this.name = name;
@@ -127,9 +128,8 @@ class LogImpl<T extends LogLevel> implements Log<T> {
             return;
         }
         AppendableCharSequence msg = new AppendableCharSequence(60);
-        List<Object> stuff = new LinkedList<>(m);
         MapBuilder2<String, Object> mb = CollectionUtils.map();
-        for (Iterator<Object> it = stuff.iterator(); it.hasNext();) {
+        for (Iterator<Object> it = m.iterator(); it.hasNext();) {
             Object o = it.next();
             CharSequence s = null;
             if (o == null) {
@@ -191,7 +191,7 @@ class LogImpl<T extends LogLevel> implements Log<T> {
         mb.map("name").to(name)
                 .map("msg").to(msg)
                 .map("v").to(0)
-                .map("time").to(formattedNow())
+                .map("time").to(now)
                 .map("pid").to(pid())
                 .map("level").to(level.ordinal())
                 .map("hostname").to(config.hostname());

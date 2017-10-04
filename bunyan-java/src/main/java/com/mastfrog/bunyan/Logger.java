@@ -68,10 +68,9 @@ public class Logger {
      */
     <T extends LogLevel<T>> Log<T> log(T level, Object... records) {
         if (!level.isEnabled()) {
-            return new NullLogger<T>(level);
+            return new NullLogger<>(level);
         }
-        LogImpl<T> result = new LogImpl<T>(name, level, sink, config);
-//        Log<T> result = new LightweightLogImpl<T>(name, level, sink, config);
+        LogImpl<T> result = new LogImpl<>(name, level, sink, config);
         for (Object o : records) {
             result.add(o);
         }

@@ -27,13 +27,13 @@ import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import org.joda.time.DateTime;
 
 /**
  * A bunyan-style log record, with fields for the required fields in a log
@@ -47,7 +47,7 @@ public class LogRecord implements Iterable<String> {
     public final String msg;
     public final int pid;
     public final String hostName;
-    public final DateTime time;
+    public final ZonedDateTime time;
     public final int level;
     public @JsonIgnore
     final Map<String, Object> props = new LinkedHashMap<>();
@@ -64,7 +64,7 @@ public class LogRecord implements Iterable<String> {
      * @param hostName The host name property
      */
     public LogRecord(@JsonProperty("name") String name, @JsonProperty("msg") String msg,
-            @JsonProperty("time") DateTime time, @JsonProperty("v") int version,
+            @JsonProperty("time") ZonedDateTime time, @JsonProperty("v") int version,
             @JsonProperty("level") int level,
             @JsonProperty("pid") int pid, @JsonProperty("hostname") String hostName) {
         this.name = name.intern();

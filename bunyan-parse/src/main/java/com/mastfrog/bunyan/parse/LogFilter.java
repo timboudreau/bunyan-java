@@ -23,6 +23,7 @@
  */
 package com.mastfrog.bunyan.parse;
 
+import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -30,7 +31,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
-import org.joda.time.DateTime;
 
 /**
  * A filter predicate for LogStreams. You can use a plain predicate, but this
@@ -96,7 +96,7 @@ public abstract class LogFilter implements Predicate<LogRecord> {
         };
     }
 
-    public static LogFilter before(DateTime dt) {
+    public static LogFilter before(ZonedDateTime dt) {
         if (dt == null) {
             throw new IllegalArgumentException("Null date");
         }
@@ -108,7 +108,7 @@ public abstract class LogFilter implements Predicate<LogRecord> {
         };
     }
 
-    public static LogFilter after(DateTime dt) {
+    public static LogFilter after(ZonedDateTime dt) {
         if (dt == null) {
             throw new IllegalArgumentException("Null date");
         }

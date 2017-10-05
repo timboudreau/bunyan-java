@@ -120,18 +120,6 @@ class NioFileWriter extends SimpleLogWriter implements Callable<Void>, LogWriter
         }
     }
 
-    public void xwrite(byte[] bytes) {
-        try {
-            channel.write(ByteBuffer.wrap(bytes));
-            channel.write(ByteBuffer.wrap(new byte[]{'\n'}));
-            if (synchronous) {
-                channel.force(true);
-            }
-        } catch (IOException ex) {
-            Logger.getLogger(SimpleLogWriter.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
-
     void flushBuffer(ByteBuffer buffer, CharsetEncoder enc, boolean finished) throws IOException {
         if (finished) {
             enc.flush(buffer);

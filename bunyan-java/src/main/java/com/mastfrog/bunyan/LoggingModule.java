@@ -26,8 +26,10 @@ package com.mastfrog.bunyan;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provider;
 import com.google.inject.name.Names;
+import com.mastfrog.jackson.DurationSerializationMode;
 import com.mastfrog.jackson.JacksonConfigurer;
 import com.mastfrog.jackson.JacksonModule;
+import com.mastfrog.jackson.TimeSerializationMode;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.util.LinkedList;
@@ -106,7 +108,7 @@ public class LoggingModule extends AbstractModule {
      */
     public LoggingModule(boolean useMetaInfServicesJacksonConfigurers) {
         jacksonModule = new JacksonModule(GUICE_BINDING_OBJECT_MAPPER, useMetaInfServicesJacksonConfigurers)
-                .withConfigurer(new JacksonConfig());
+                .withConfigurer(new JacksonConfig()).withJavaTimeSerializationMode(TimeSerializationMode.TIME_AS_ISO_STRING, DurationSerializationMode.DURATION_AS_MILLIS);
     }
 
     /**

@@ -24,13 +24,14 @@
 package com.mastfrog.bunyan;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.joda.JodaModule;
 import com.mastfrog.bunyan.parse.LogRecord;
 import com.mastfrog.bunyan.parse.LogStreamFactory;
 import com.mastfrog.bunyan.parse.LogStreamFactory.ReadResult;
 import com.mastfrog.bunyan.type.Fatal;
 import com.mastfrog.giulius.Dependencies;
+import com.mastfrog.jackson.DurationSerializationMode;
 import com.mastfrog.jackson.JacksonModule;
+import com.mastfrog.jackson.TimeSerializationMode;
 import com.mastfrog.settings.Settings;
 import com.mastfrog.settings.SettingsBuilder;
 import java.io.File;
@@ -65,8 +66,7 @@ public class AsyncLoggingTest {
                 .add(LoggingModule.SETTINGS_KEY_LOG_FILE, logfile.getAbsolutePath())
                 .build();
 
-        deps = new Dependencies(settings, new JacksonModule().withConfigurer((ObjectMapper om) -> om.registerModule(new JodaModule())), new LoggingModule(false)
-                .withConfigurer((ObjectMapper om) -> om.registerModule(new JodaModule()))
+        deps = new Dependencies(settings, new JacksonModule().withJavaTimeSerializationMode(TimeSerializationMode.TIME_AS_ISO_STRING, DurationSerializationMode.DURATION_AS_MILLIS), new LoggingModule(false)
                 .bindLogger("foo"));
 
         loggers = deps.getInstance(Loggers.class);

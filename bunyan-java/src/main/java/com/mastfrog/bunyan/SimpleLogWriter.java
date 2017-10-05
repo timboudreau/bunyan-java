@@ -223,9 +223,20 @@ public class SimpleLogWriter implements LogWriter {
             }
 
             volatile boolean stopped;
+            volatile boolean exited;
 
             void stop() {
                 stopped = true;
+                // Make sure we don't flush contents out-of-sequence
+                if (!exited) {
+                    synchronized (this) {
+                        try {
+                            wait(3000);
+                        } catch (InterruptedException ex) {
+                            // ok
+                        }
+                    }
+                }
                 try {
                     flush(new LinkedList<>());
                 } catch (InterruptedException ex) {
@@ -251,9 +262,13 @@ public class SimpleLogWriter implements LogWriter {
                         }
                     } catch (InterruptedException ex) {
                         if (stopped) {
-                            return;
+                            break;
                         }
                     }
+                }
+                exited = true;
+                synchronized (this) {
+                    notifyAll();
                 }
             }
         }

@@ -117,7 +117,6 @@ class LogImpl<T extends LogLevel> implements Log<T> {
         try {
             return pid = Integer.parseInt(beanName.split("@")[0]);
         } catch (NumberFormatException nfe) {
-            System.err.println("Could not find pid in '" + beanName + "'");
             return pid = 0;
         }
     }

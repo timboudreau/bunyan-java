@@ -204,7 +204,6 @@ public class LoggingConfig {
                 return check;
             }
         }
-        System.err.println("FOUND HOST NAME " + result);
         return result;
     }
 

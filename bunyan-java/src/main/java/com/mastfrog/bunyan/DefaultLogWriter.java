@@ -55,11 +55,9 @@ final class DefaultLogWriter implements LogWriter {
             w = SimpleLogWriter.forFile(f, gzip, bufferSize);
             boolean consoleToo = settings.getBoolean(SETTINGS_KEY_LOG_TO_CONSOLE, false);
             if (consoleToo) {
-                System.err.println("Creating a console logger");
                 w = SimpleLogWriter.combine(w, new SimpleLogWriter());
             }
         } else {
-            System.err.println("No log file " + SETTINGS_KEY_LOG_FILE + " - write to console only");
             w = new SimpleLogWriter();
         }
         if (settings.getBoolean(SETTINGS_KEY_ASYNC_LOGGING, true)) {

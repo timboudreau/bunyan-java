@@ -164,7 +164,6 @@ class NioFileWriter extends SimpleLogWriter implements Callable<Void>, LogWriter
     void flush() throws IOException {
         try {
             List<ByteBuffer> buffers = pool.awaitQuiet();
-            System.out.println("On shutdown flush " + buffers.size() + " buffers");
             for (ByteBuffer buf : buffers) {
                 buf.flip();
                 channel.write(buf);

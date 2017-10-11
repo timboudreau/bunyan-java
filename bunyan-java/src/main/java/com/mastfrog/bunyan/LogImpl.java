@@ -26,6 +26,7 @@ package com.mastfrog.bunyan;
 import static com.mastfrog.bunyan.LoggingModule.ISO_INSTANT;
 import com.mastfrog.bunyan.type.LogLevel;
 import com.mastfrog.util.Checks;
+import com.mastfrog.util.Strings;
 import com.mastfrog.util.collections.CollectionUtils;
 import com.mastfrog.util.collections.MapBuilder2;
 import com.mastfrog.util.strings.AppendableCharSequence;
@@ -179,7 +180,7 @@ class LogImpl<T extends LogLevel> implements Log<T> {
                     }
                 }
             }
-            if (s != null) {
+            if (s != null && !Strings.charSequenceContains(msg, s, false)) {
                 if (msg.length() != 0) {
                     msg.append(' ');
                 }

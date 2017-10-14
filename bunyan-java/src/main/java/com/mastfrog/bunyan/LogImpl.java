@@ -139,7 +139,7 @@ class LogImpl<T extends LogLevel> implements Log<T> {
                 it.remove();
             } else if (o instanceof Boolean || o instanceof Number) {
                 s = o.toString();
-            } else if (o instanceof Map) {
+            } else if (o instanceof Map<?,?>) {
                 Map<?, ?> m = ((Map) o);
                 for (Map.Entry<?, ?> e : m.entrySet()) {
                     if ("msg".equals(e.getKey())) {
@@ -154,7 +154,6 @@ class LogImpl<T extends LogLevel> implements Log<T> {
                         mb.map(Objects.toString(key)).to(e.getValue());
                     }
                 }
-
                 it.remove();
             } else if (o instanceof List) {
                 List<?> l = (List<?>) o;

@@ -29,6 +29,10 @@ import com.mastfrog.bunyan.type.Info;
 import com.mastfrog.bunyan.type.LogLevel;
 import com.mastfrog.bunyan.type.Trace;
 import com.mastfrog.bunyan.type.Warn;
+import static com.mastfrog.util.Checks.notNull;
+import com.mastfrog.util.collections.ArrayUtils;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  * A factory for log records
@@ -148,21 +152,48 @@ public class Logger {
         return new ChildLogger(name, sink, config, loggers, stuff);
     }
 
+    public ChildLoggerBuilder childLogger() {
+        return new ChildLoggerBuilder(this);
+    }
+
+    public static final class ChildLoggerBuilder {
+
+        private final Logger logger;
+        private final Map<String, Object> objs = new LinkedHashMap<>();
+
+        ChildLoggerBuilder(Logger logger) {
+            this.logger = logger;
+        }
+
+        public ChildLoggerBuilder add(String key, Object val) {
+            objs.put(notNull("key", key), notNull("val", val));
+            return this;
+        }
+
+        public Logger build() {
+            return logger.child(objs);
+        }
+    }
+
     private static final class ChildLogger extends Logger {
+
+        private final Object[] stuff;
 
         public ChildLogger(String name, LogSink sink, LoggingConfig config, Loggers loggers, Object... stuff) {
             super(name, sink, config, loggers);
+            this.stuff = stuff;
         }
 
         @Override
         <T extends LogLevel<T>> Log<T> log(T level, Object... records) {
-            Log<T> result = super.log(level, records);
-            for (Object o : records) {
-                result.add(o);
-            }
-            return result;
+            Object[] all = ArrayUtils.concatenate(stuff, records);
+            return super.log(level, all);
         }
 
+        @Override
+        public Logger child(Object... stuff) {
+            return new ChildLogger(super.name, super.sink, super.config, super.loggers, ArrayUtils.concatenate(this.stuff, stuff));
+        }
     }
 
     public String toString() {

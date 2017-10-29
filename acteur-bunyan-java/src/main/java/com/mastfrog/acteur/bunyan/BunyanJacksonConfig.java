@@ -14,7 +14,6 @@ import com.mastfrog.acteur.Event;
 import com.mastfrog.acteur.HttpEvent;
 import com.mastfrog.acteur.headers.Headers;
 import com.mastfrog.acteur.util.RequestID;
-import com.mastfrog.bunyan.LoggingModule;
 import com.mastfrog.jackson.JacksonConfigurer;
 import com.mastfrog.url.Path;
 import com.mastfrog.url.URL;
@@ -108,7 +107,7 @@ public class BunyanJacksonConfig implements JacksonConfigurer {
 
         @Override
         public void serialize(ZonedDateTime t, JsonGenerator jg, SerializerProvider sp) throws IOException, JsonProcessingException {
-            jg.writeString(LoggingModule.ISO_INSTANT.format(t));
+            jg.writeString(TimeUtil.toIsoFormat(t));
         }
     }
 
@@ -132,7 +131,7 @@ public class BunyanJacksonConfig implements JacksonConfigurer {
             if (NUMBERS.matcher(string).matches()) {
                 return TimeUtil.fromUnixTimestamp(Long.parseLong(string));
             }
-            return ZonedDateTime.parse(string, LoggingModule.ISO_INSTANT);
+            return TimeUtil.fromIsoFormat(string);
         }
     }
 

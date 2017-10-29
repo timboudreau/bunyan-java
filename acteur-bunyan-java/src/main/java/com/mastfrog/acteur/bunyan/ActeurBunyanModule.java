@@ -23,21 +23,33 @@
  */
 package com.mastfrog.acteur.bunyan;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.google.inject.AbstractModule;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.google.inject.name.Named;
 import com.google.inject.name.Names;
+import com.mastfrog.acteur.Acteur;
 import com.mastfrog.acteur.Event;
+import com.mastfrog.acteur.HttpEvent;
+import com.mastfrog.acteur.Page;
 import com.mastfrog.acteur.RequestLogger;
+import com.mastfrog.acteur.debug.HttpProbe;
+import com.mastfrog.acteur.debug.Probe;
 import com.mastfrog.acteur.util.ErrorInterceptor;
 import com.mastfrog.acteur.util.RequestID;
+import com.mastfrog.acteurbase.ActeurState;
 import com.mastfrog.bunyan.Log;
 import com.mastfrog.bunyan.Logger;
 import com.mastfrog.bunyan.LoggingConfig;
 import com.mastfrog.bunyan.LoggingModule;
 import com.mastfrog.jackson.JacksonConfigurer;
+import com.mastfrog.util.Exceptions;
+import static com.mastfrog.util.collections.CollectionUtils.map;
 import io.netty.handler.codec.http.HttpResponseStatus;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 /**
  *
@@ -50,6 +62,7 @@ public class ActeurBunyanModule extends AbstractModule {
     public static final String ACCESS_LOGGER = "requests";
     private String requestLoggerLevel = "debug";
     private boolean bindErrorInterceptor = true;
+    private boolean useProbe = Boolean.getBoolean("acteur.debug");
 
     public ActeurBunyanModule() {
         this(true);
@@ -84,6 +97,14 @@ public class ActeurBunyanModule extends AbstractModule {
         return this;
     }
 
+    private boolean includeBody;
+
+    public ActeurBunyanModule useProbe(boolean includeBody) {
+        this.useProbe = true;
+        this.includeBody = includeBody;
+        return this;
+    }
+
     void checkLaunched() {
         if (launched) {
             throw new IllegalStateException("Cannot configure after the injector has been created");
@@ -95,6 +116,9 @@ public class ActeurBunyanModule extends AbstractModule {
 
     @Override
     protected void configure() {
+        if (useProbe) {
+            bindLogger("probe");
+        }
         launched = true;
         install(loggingModule);
         if (bindErrorInterceptor && !Boolean.getBoolean("unit.test")) {
@@ -103,6 +127,75 @@ public class ActeurBunyanModule extends AbstractModule {
         bind(RequestLogger.class).to(JsonRequestLogger.class);
         bind(String.class).annotatedWith(Names.named(GUICE_BINDING_REQUEST_LOGGER_LEVEL))
                 .toInstance(this.requestLoggerLevel);
+
+        if (useProbe) {
+            bind(Probe.class).toProvider(ProbeLogger.class);
+            bind(Boolean.class).annotatedWith(Names.named("_probeBody")).toInstance(includeBody);
+        }
+    }
+
+    static class ProbeLogger extends HttpProbe {
+
+        private final Logger logger;
+        private final Cache<RequestID, Logger> kids = CacheBuilder.newBuilder().weakKeys().build();
+        private final boolean bodies;
+
+        @Inject
+        ProbeLogger(@Named("probe") Logger logger, @Named("_probeBody") boolean bodies) {
+            this.logger = logger;
+            this.bodies = bodies;
+        }
+
+        private Logger childLogger(RequestID id, HttpEvent evt) {
+            try {
+                Logger l = kids.get(id, () -> {
+                    return logger.child(
+                            map("rid").to(id.stringValue())
+                                    .map("path").to(evt.path())
+                                    .map("early").to(evt.isPreContent())
+                                    .map("method").to(evt.method().name())
+                                    .build());
+                });
+                return l;
+            } catch (ExecutionException ex) {
+                Exceptions.printStackTrace(ex);
+                return logger;
+            }
+        }
+
+        @Override
+        protected void onInfo(String info, Object... objs) {
+            logger.info(String.format(info, objs)).close();
+        }
+
+        @Override
+        protected void onBeforeSendResponse(RequestID id, HttpEvent httpEvent, Acteur acteur, HttpResponseStatus status, boolean hasListener, Object message) {
+            childLogger(id, httpEvent).trace("onBeforeSendResponse").add("acteur", acteur.getClass().getName())
+                    .add("status", status).add("listener", hasListener).add("message", bodies ? message : "-").close();
+        }
+
+        @Override
+        protected void onFallthrough(RequestID id, HttpEvent evt) {
+            childLogger(id, evt).trace("onFallthrough");
+        }
+
+        @Override
+        protected void onActeurWasRun(RequestID id, HttpEvent evt, Page page, Acteur acteur, ActeurState state) {
+            Map<String, Object> stateInfo = state == null ? null : map("finished").to(state.isFinished())
+                    .map("type").to(state.getClass().getName()).build();
+            childLogger(id, evt).trace("onActeurWasRun").add("page", page.getClass().getName())
+                    .add("acteur", acteur.getClass().getName()).add("state", stateInfo).close();
+        }
+
+        @Override
+        protected void onBeforeRunPage(RequestID id, HttpEvent evt, Page page) {
+            childLogger(id, evt).trace("onBeforeRunPage").add("page", page.getClass().getSimpleName()).close();
+        }
+
+        @Override
+        protected void onBeforeProcessRequest(RequestID id, HttpEvent req) {
+            childLogger(id, req).trace("onBeforeProcessRequest");
+        }
     }
 
     @Singleton
@@ -142,7 +235,7 @@ public class ActeurBunyanModule extends AbstractModule {
         JsonRequestLogger(@Named(ACCESS_LOGGER) Logger logger, @Named(GUICE_BINDING_REQUEST_LOGGER_LEVEL) String level,
                 RequestLogRecordDecorator decorator) {
             this.logger = logger;
-            this.level = level;
+            this.level = level.intern();
             this.decorator = decorator;
         }
 

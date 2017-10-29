@@ -23,13 +23,13 @@
  */
 package com.mastfrog.bunyan;
 
-import static com.mastfrog.bunyan.LoggingModule.ISO_INSTANT;
 import com.mastfrog.bunyan.type.LogLevel;
 import com.mastfrog.util.Checks;
 import com.mastfrog.util.Strings;
 import com.mastfrog.util.collections.CollectionUtils;
 import com.mastfrog.util.collections.MapBuilder2;
 import com.mastfrog.util.strings.AppendableCharSequence;
+import com.mastfrog.util.time.TimeUtil;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.time.ZoneId;
@@ -103,7 +103,7 @@ class LogImpl<T extends LogLevel> implements Log<T> {
 
     static String formattedNow() {
         ZonedDateTime now = ZonedDateTime.now().withZoneSameInstant(ZoneId.of("GMT"));
-        return ISO_INSTANT.format(now);
+        return TimeUtil.toIsoFormat(now);
     }
 
     static int pid = -1;

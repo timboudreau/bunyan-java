@@ -30,11 +30,8 @@ import com.mastfrog.jackson.DurationSerializationMode;
 import com.mastfrog.jackson.JacksonConfigurer;
 import com.mastfrog.jackson.JacksonModule;
 import com.mastfrog.jackson.TimeSerializationMode;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Locale;
 
 /**
  *
@@ -85,15 +82,6 @@ public class LoggingModule extends AbstractModule {
     public static final String GUICE_BINDING_OBJECT_MAPPER = "bunyan-java";
     private final JacksonModule jacksonModule;
 
-    public static final DateTimeFormatter ISO_INSTANT;
-
-    static {
-        ISO_INSTANT = new DateTimeFormatterBuilder()
-                .parseCaseInsensitive()
-                .appendInstant()
-                .toFormatter(Locale.US);
-    }
-
     public LoggingModule() {
         this(true);
     }
@@ -108,7 +96,8 @@ public class LoggingModule extends AbstractModule {
      */
     public LoggingModule(boolean useMetaInfServicesJacksonConfigurers) {
         jacksonModule = new JacksonModule(GUICE_BINDING_OBJECT_MAPPER, useMetaInfServicesJacksonConfigurers)
-                .withConfigurer(new JacksonConfig()).withJavaTimeSerializationMode(TimeSerializationMode.TIME_AS_ISO_STRING, DurationSerializationMode.DURATION_AS_MILLIS);
+                .withConfigurer(new JacksonConfig())
+                .withJavaTimeSerializationMode(TimeSerializationMode.TIME_AS_ISO_STRING, DurationSerializationMode.DURATION_AS_MILLIS);
     }
 
     /**

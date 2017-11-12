@@ -14,6 +14,10 @@
         <module>bunyan-java</module>
         <module>acteur-bunyan-java</module>
         <module>bunyan-parse</module>
+        <module>bunyan-java-mongodb-sink/bunyan-java-mongodb-sink</module>
+        <module>bunyan-java-log4j-appender</module>
+        <module>bunyan-java-util-logging</module>
+        <module>bunyan-log4j2-appender</module>
     </modules>
     <repositories>
         <repository>

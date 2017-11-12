@@ -12,3 +12,6 @@ target/
 /cluster-ids/nbproject/private/
 bunyan-java/nb-configuration.xml
 
+/bunyan-java-log4j-appender/nbproject/
+/bunyan-java-util-logging/nbproject/
+/bunyan-log4j2-appender/nbproject/

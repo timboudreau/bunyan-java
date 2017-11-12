@@ -29,7 +29,7 @@ File or console logging or both are available, others can be implemented.
 Dependencies
 ------------
 
-Joda Time, Guice, Giulius, Jackson
+Guice, Giulius, Jackson
 
 You do not have to use Giulius, but the default ``LogWriter`` implementation expects to find
 an instance of ``Settings`` bound.  If you want to use plain Guice, you'll need to implement
@@ -38,6 +38,54 @@ an instance of ``Settings`` bound.  If you want to use plain Guice, you'll need 
 
 It is also useful to include giulius-jackson's ``JacksonModule``, which will automatically
 find and bind a Jackson module that adds an improved serializer for ``Throwable``s.
+
+Integration With Logging Frameworks
+-----------------------------------
+
+Most logging frameworks have a concept of "appenders" or "handlers" which write output to some
+destination.  Several subprojects here can be used to install bunyan-java as a logging destination.
+
+ * bunyan-java-log4j-appender - an appender for Log4J 1.x
+ * bunyan-java-util-logging - a Handler implementation for the JDK's logging library
+ * bunyan-log4j2-appender - an appender for Log4J 2.x - pass `-Dlog4j.configurationFactory=com.mastfrog.bunyan.log4j2.appender.BunyanConfigurationFactory` to use
+
+Each of these projects contains a Guice module which connects the logger to bunyan-java.  If you
+use these adapters _you must also install the corresponding Guice module_ - logging prior to bunyan-java
+being initialized is buffered and output to bunyan-java on initialization; if bunyan-java never gets initialized,
+all logging will be buffered in-memory until there is no more memory.  For each framework, the
+module optionally (constructor argument) will _attempt_ to reinitialize the logging framework to
+use bunyan-java with no configuration files needed.  This is great to get the basics working, but to
+ensure *all* logging goes through bunyan-java, configure your logging framework of choice appropriately
+(usually system properties or files on disk or some combination thereof).
+
+Note that `java.util.logging` and Log4J are _text-oriented_ as most traditional Java logging is,
+meaning that their output is much less rich than you can get from using bunyan-java directly - but
+these adapters make it possible to unify all logging to output through bunyan.
+
+Note you will still need to use `LoggingModule` to set up bunyan-java, in addition to adapter modules.
+
+Differences from Traditional Loggers
+------------------------------------
+
+### Designed for Dependency Injection
+
+ * Bunyan-java is designed with dependency injection in mind, and utilizes Guice internally (you don't have to) - you can, for example,
+during setup call `loggingModule.bindLogger("request")`, and then anything that needs an instance of `Logger` can just ask for
+`@Named("request") Logger logger`
+
+ * Log objects, not text - most logging information is processed by machines anyway - single lines of JSON make far more sense as an output format
+than lines of plain text
+
+ * A log level is an object - and it's a factory for `Log` instances
+
+ * A `Log` instance represents one Log record you are going to write, and calling `close()` on it writes it - using the JDK's `AutoCloseable` to ensure it is:
+
+```
+try (Log<Debug> log = loggers.debug("saveFile")) {
+   File newFile = findUnusedFile();
+   log.add("to", newFile);
+   // do some complicated logic here, and add different properties to the log record depending what happens
+}
 
 Usage
 -----
@@ -66,6 +114,10 @@ to inject loggers:
 
 		class Mailer {
                    Mailer (@Named("mailer") Logger logger, ...) { ...
+
+Note: ``log.file`` console logging off uses buffered NIO - log records will be buffered, so logging may appear to stutter (a shutdown
+hook will ensure any buffered records are written) - and can write two million records in about 10 seconds on a laptop with an SSD.
+`log.async` is useful for performance if you will log to both console and a file, but uses a different file logging implementation.
 
 [This unit test](https://github.com/timboudreau/bunyan-java/blob/master/src/test/java/com/mastfrog/bunyan/LoggerTest.java) shows
 some usage.  It results in output which, indeed, can be parsed nicely with Bunyan:
@@ -108,3 +160,15 @@ But What About Static Logging?
 ------------------------------
 
 You don't need it.  I said this library was opinionated, right?
+
+
+MongoDB Log Sink
+----------------
+
+The experimental subproject `bunyan-java-mongodb-sink` provides an implementation of bunyan-java's `LogSink` which
+will route all logging to MongoDB.  This can be used in the following ways:
+
+ * To route all logging to MongoDB, period, bind `LogSink` to `MongoDBLogSink` (there will be no console or other logging, no matter what you configured bunyan-java to do)
+ * To use existing logging configuration, *and* MongoDB, bind `ComposableMongoDBSink` as an eager singleton, and call `LoggingModule.bindMultiLogSink()` when setting up your logging
+
+

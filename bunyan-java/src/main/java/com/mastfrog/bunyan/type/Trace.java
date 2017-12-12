@@ -23,7 +23,7 @@
  */
 package com.mastfrog.bunyan.type;
 
-import com.mastfrog.bunyan.Loggers;
+import com.mastfrog.bunyan.LoggerSource;
 import com.mastfrog.bunyan.LoggingConfig;
 import javax.inject.Inject;
 import javax.inject.Provider;
@@ -35,7 +35,7 @@ import javax.inject.Provider;
 public class Trace extends AbstractLogLevel<Trace> {
 
     @Inject
-    Trace(LoggingConfig config, Provider<Loggers> loggers) {
+    Trace(LoggingConfig config, Provider<LoggerSource> loggers) {
         super(10, config, loggers);
     }
 }

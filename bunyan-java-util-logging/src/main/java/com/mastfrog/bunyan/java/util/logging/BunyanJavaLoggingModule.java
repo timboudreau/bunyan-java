@@ -93,5 +93,4 @@ public final class BunyanJavaLoggingModule extends AbstractModule {
         props.save(baos, "x");
         return new ByteArrayInputStream(baos.toByteArray());
     }
-
 }

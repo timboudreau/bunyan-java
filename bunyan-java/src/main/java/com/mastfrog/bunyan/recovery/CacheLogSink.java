@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2015 Tim Boudreau.
+ * Copyright 2017 Tim Boudreau.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,21 +21,48 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.mastfrog.bunyan.type;
+package com.mastfrog.bunyan.recovery;
 
-import com.mastfrog.bunyan.LoggerSource;
-import com.mastfrog.bunyan.LoggingConfig;
-import javax.inject.Inject;
-import javax.inject.Provider;
+import com.mastfrog.bunyan.BatchSink;
+import com.mastfrog.bunyan.LogSink;
+import com.mastfrog.bunyan.type.LogLevel;
+import com.mastfrog.util.thread.AtomicLinkedQueue;
+import java.util.List;
+import java.util.Map;
 
 /**
  *
  * @author Tim Boudreau
  */
-public class Warn extends AbstractLogLevel<Warn> {
+final class CacheLogSink implements LogSink {
 
-    @Inject
-    Warn(LoggingConfig config, Provider<LoggerSource> loggers) {
-        super(40, config, loggers);
+    private final AtomicLinkedQueue<Map<String, Object>> records = new AtomicLinkedQueue<>();
+
+    @Override
+    public void push(LogLevel level, Map<String, Object> logrecord) {
+        System.out.println(" --write to temp cache " + logrecord);
+        records.add(logrecord);
+    }
+
+    List<Map<String, Object>> drain() {
+        return records.drain();
+    }
+
+    void drainTo(LogSink dest) {
+        if (dest == this) {
+            return;
+        }
+        if (dest instanceof BatchSink) {
+            ((BatchSink) dest).pushMany(records.drain());
+        } else {
+            records.drain((Map<String, Object> m) -> {
+                dest.push(null, m);
+            });
+        }
+    }
+
+    @Override
+    public String toString() {
+        return "CacheLogSink<" + records.size() + ">";
     }
 }

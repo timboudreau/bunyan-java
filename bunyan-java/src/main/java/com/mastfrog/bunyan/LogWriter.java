@@ -35,7 +35,7 @@ public interface LogWriter {
 
     void write(CharSequence s);
 
-    interface Bytes {
+    interface Bytes extends LogWriter {
         void write(byte[] bytes);
     }
 }

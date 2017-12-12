@@ -24,7 +24,7 @@
 package com.mastfrog.bunyan.type;
 
 import com.mastfrog.bunyan.Log;
-import com.mastfrog.bunyan.Loggers;
+import com.mastfrog.bunyan.LoggerSource;
 import com.mastfrog.bunyan.LoggingConfig;
 import com.mastfrog.util.Checks;
 import javax.inject.Provider;
@@ -38,9 +38,9 @@ abstract class AbstractLogLevel<T extends LogLevel> implements LogLevel<T> {
     private final String name;
     private final int ordinal;
     private final LoggingConfig config;
-    private final Provider<Loggers> loggers;
+    private final Provider<LoggerSource> loggers;
 
-    AbstractLogLevel(int ordinal, LoggingConfig config, Provider<Loggers> loggers) {
+    AbstractLogLevel(int ordinal, LoggingConfig config, Provider<LoggerSource> loggers) {
         name = getClass().getSimpleName().toLowerCase();
         this.ordinal = ordinal;
         this.config = config;

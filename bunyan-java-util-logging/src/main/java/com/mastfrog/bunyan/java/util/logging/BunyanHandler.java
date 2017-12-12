@@ -9,6 +9,10 @@ import com.mastfrog.bunyan.Log;
 import com.mastfrog.bunyan.Loggers;
 import com.mastfrog.bunyan.type.LogLevel;
 import com.mastfrog.util.thread.AtomicLinkedQueue;
+import com.mastfrog.util.thread.FactoryThreadLocal;
+import com.mastfrog.util.thread.NonThrowingAutoCloseable;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
@@ -72,13 +76,50 @@ public class BunyanHandler extends Handler {
     private final class Sender implements Consumer<LogRecord> {
 
         private final Loggers loggers;
+        private final AtomicLinkedQueue<LogRecord> unsent = new AtomicLinkedQueue<>();
+        private final FactoryThreadLocal<Boolean> reentry = new FactoryThreadLocal<>(() -> Boolean.FALSE);
 
         public Sender(Loggers loggers) {
             this.loggers = loggers;
         }
 
+        LogRecord last;
         @Override
         public void accept(LogRecord t) {
+            if (reentry.get()) {
+                unsent.add(t);
+                return;
+            }
+            if (last == t) {
+                return;
+            }
+            try (NonThrowingAutoCloseable cl = reentry.open(true)) {
+                try {
+                    while (!unsent.isEmpty()) {
+                        List<LogRecord> recs = new ArrayList<>(unsent.drain());
+                        try {
+                            for (Iterator<LogRecord> it = recs.iterator(); it.hasNext();) {
+                                reallySend(it.next());
+                                it.remove();
+                            }
+                        } catch (Exception ex) {
+                            for (LogRecord r : recs) {
+                                unsent.add(r);
+                            }
+//                            Exceptions.chuck(ex);
+                        }
+                    }
+                    reallySend(t);
+                } catch (IllegalStateException ex) {
+                    if (ex.getMessage() != null && ex.getMessage().contains(
+                            "This is a proxy used to support circular references")) {
+                        unsent.add(t);
+                    }
+                }
+            }
+        }
+
+        private void reallySend(LogRecord t) {
             LogLevel<?> level = levelFor(t.getLevel());
             try (Log<?> log = level.log(t.getLoggerName())) {
                 log.add(t.getMessage());

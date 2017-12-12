@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2015 Tim Boudreau.
+ * Copyright 2017 Tim Boudreau.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,21 +21,17 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.mastfrog.bunyan.type;
 
-import com.mastfrog.bunyan.LoggerSource;
-import com.mastfrog.bunyan.LoggingConfig;
-import javax.inject.Inject;
-import javax.inject.Provider;
+package com.mastfrog.bunyan.recovery;
+
+import java.io.File;
 
 /**
  *
  * @author Tim Boudreau
  */
-public class Warn extends AbstractLogLevel<Warn> {
+public interface OnBeforeRead {
 
-    @Inject
-    Warn(LoggingConfig config, Provider<LoggerSource> loggers) {
-        super(40, config, loggers);
-    }
+    void onBeforeRead(File file, long position);
+
 }

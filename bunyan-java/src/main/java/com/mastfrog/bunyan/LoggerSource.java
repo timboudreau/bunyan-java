@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2015 Tim Boudreau.
+ * Copyright 2017 Tim Boudreau.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,21 +21,51 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.mastfrog.bunyan.type;
+package com.mastfrog.bunyan;
 
-import com.mastfrog.bunyan.LoggerSource;
-import com.mastfrog.bunyan.LoggingConfig;
-import javax.inject.Inject;
-import javax.inject.Provider;
+import com.google.inject.ImplementedBy;
+import com.mastfrog.bunyan.type.Debug;
+import com.mastfrog.bunyan.type.Fatal;
+import com.mastfrog.bunyan.type.Info;
+import com.mastfrog.bunyan.type.LogLevel;
+import com.mastfrog.bunyan.type.Trace;
+import com.mastfrog.bunyan.type.Warn;
 
 /**
  *
  * @author Tim Boudreau
  */
-public class Warn extends AbstractLogLevel<Warn> {
+@ImplementedBy(Loggers.class)
+public interface LoggerSource {
 
-    @Inject
-    Warn(LoggingConfig config, Provider<LoggerSource> loggers) {
-        super(40, config, loggers);
-    }
+    /**
+     * Create a new log record with the specified level and name
+     *
+     * @param <T> The log level tyep
+     * @param level The log level
+     * @param name The name of the logger
+     * @return A log record
+     */
+    @SuppressWarnings(value = "unchecked")
+    <T extends LogLevel> Log<T> log(T level, String name);
+
+    /**
+     * Get a logger
+     *
+     * @param name
+     * @return
+     */
+    Logger logger(String name);
+
+    Trace trace();
+
+    Debug debug();
+
+    Info info();
+
+    Warn warn();
+
+    com.mastfrog.bunyan.type.Error error();
+
+    Fatal fatal();
 }

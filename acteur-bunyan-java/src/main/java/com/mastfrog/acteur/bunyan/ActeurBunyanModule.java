@@ -97,6 +97,11 @@ public class ActeurBunyanModule extends AbstractModule {
         return this;
     }
 
+    public ActeurBunyanModule bindMultiLogSink() {
+        loggingModule.bindMultiLogSink();
+        return this;
+    }
+
     private boolean includeBody;
 
     public ActeurBunyanModule useProbe(boolean includeBody) {

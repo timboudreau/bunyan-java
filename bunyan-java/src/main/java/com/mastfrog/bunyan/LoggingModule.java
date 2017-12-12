@@ -146,10 +146,10 @@ public class LoggingModule extends AbstractModule {
     protected void configure() {
         for (String s : loggers) {
             bind(Logger.class).annotatedWith(Names.named(s))
-                    .toProvider(new LoggerProvider(s, binder().getProvider(Loggers.class)));
+                    .toProvider(new LoggerProvider(s, binder().getProvider(LoggerSource.class)));
         }
         install(jacksonModule);
-        if(bindMultiLogSink) {
+        if (bindMultiLogSink) {
             bind(LogSink.class).to(MultiLogSink.class).asEagerSingleton();
         }
     }
@@ -157,9 +157,9 @@ public class LoggingModule extends AbstractModule {
     private static class LoggerProvider implements Provider<Logger> {
 
         private final String name;
-        private final Provider<Loggers> loggers;
+        private final Provider<LoggerSource> loggers;
 
-        public LoggerProvider(String name, Provider<Loggers> loggers) {
+        public LoggerProvider(String name, Provider<LoggerSource> loggers) {
             this.name = name;
             this.loggers = loggers;
         }

@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2015 Tim Boudreau.
+ * Copyright 2017 Tim Boudreau.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,21 +21,21 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.mastfrog.bunyan.type;
+package com.mastfrog.bunyan;
 
-import com.mastfrog.bunyan.LoggerSource;
-import com.mastfrog.bunyan.LoggingConfig;
-import javax.inject.Inject;
-import javax.inject.Provider;
+import java.util.List;
+import java.util.Map;
 
 /**
  *
  * @author Tim Boudreau
  */
-public class Warn extends AbstractLogLevel<Warn> {
+public interface BatchSink extends LogSink {
 
-    @Inject
-    Warn(LoggingConfig config, Provider<LoggerSource> loggers) {
-        super(40, config, loggers);
-    }
+    /**
+     * Push a group of log records.
+     *
+     * @param records A list of log records, non null
+     */
+    void pushMany(List<Map<String,Object>> records);
 }

@@ -169,7 +169,7 @@ class NioFileWriter extends SimpleLogWriter implements Callable<Void>, LogWriter
                 channel.write(buf);
             }
             pool.close();
-            channel.force(true);
+//            channel.force(true);
         } catch (InterruptedException ex) {
             Logger.getLogger(SimpleLogWriter.class.getName()).log(Level.SEVERE, null, ex);
         }

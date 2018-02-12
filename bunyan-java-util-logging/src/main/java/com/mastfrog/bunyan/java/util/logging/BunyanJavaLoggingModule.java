@@ -24,11 +24,16 @@
 package com.mastfrog.bunyan.java.util.logging;
 
 import com.google.inject.AbstractModule;
+import static com.mastfrog.util.Checks.notNull;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
+import java.util.logging.Level;
 import java.util.logging.LogManager;
+import java.util.logging.Logger;
 
 /**
  * Configures java.util.logging to use bunyan-java as a handler. If the <code>
@@ -54,6 +59,7 @@ import java.util.logging.LogManager;
 public final class BunyanJavaLoggingModule extends AbstractModule {
 
     private final boolean autoConfigure;
+    private final Map<String, String> levels = new HashMap<>();
 
     public BunyanJavaLoggingModule(boolean autoConfigure) {
         this.autoConfigure = autoConfigure;
@@ -71,12 +77,19 @@ public final class BunyanJavaLoggingModule extends AbstractModule {
         }
     }
 
+    public BunyanJavaLoggingModule setLevel(String pkg, Level level) {
+        levels.put(notNull("pkg", pkg), notNull("level", level).getName());
+        return this;
+    }
+
     private void autoConfigure() {
         LogManager lm = LogManager.getLogManager();
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
         try {
             Thread.currentThread().setContextClassLoader(BunyanHandler.class.getClassLoader());
-            lm.readConfiguration(configuration());
+            lm.readConfiguration(configuration(levels));
+            // Force initialization here
+            Logger.getGlobal().info("java.util.logging bunyan handler installed");
         } catch (Exception ex) {
             ex.printStackTrace();
         } finally {
@@ -84,10 +97,13 @@ public final class BunyanJavaLoggingModule extends AbstractModule {
         }
     }
 
-    private static InputStream configuration() {
+    private static InputStream configuration(Map<String, String> levels) {
         Properties props = new Properties();
         props.setProperty("handlers", BunyanHandler.class.getName());
         props.setProperty(".level", "INFO");
+        for (Map.Entry<String, String> e : levels.entrySet()) {
+            props.setProperty(e.getKey() + ".level", e.getValue());
+        }
         props.setProperty(".useParentHandlers", "true");
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         props.save(baos, "x");

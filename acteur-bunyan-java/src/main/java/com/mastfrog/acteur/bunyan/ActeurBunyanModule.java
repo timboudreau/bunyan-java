@@ -62,7 +62,7 @@ public class ActeurBunyanModule extends AbstractModule {
     public static final String ACCESS_LOGGER = "requests";
     private String requestLoggerLevel = "debug";
     private boolean bindErrorInterceptor = true;
-    private boolean useProbe = Boolean.getBoolean("acteur.debug");
+    private boolean useProbe = false;
 
     public ActeurBunyanModule() {
         this(true);

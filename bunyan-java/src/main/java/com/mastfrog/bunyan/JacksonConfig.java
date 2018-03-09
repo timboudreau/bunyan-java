@@ -31,9 +31,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.mastfrog.jackson.JacksonConfigurer;
+import com.mastfrog.util.service.ServiceProvider;
 import java.io.IOException;
 import javax.inject.Singleton;
-import org.openide.util.lookup.ServiceProvider;
 
 /**
  * If you install Jackson-Guice's JacksonModule, this will bind better logging
@@ -41,7 +41,7 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author Tim Boudreau
  */
-@ServiceProvider(service=JacksonConfigurer.class)
+@ServiceProvider(JacksonConfigurer.class)
 @Singleton
 public class JacksonConfig implements JacksonConfigurer {
 

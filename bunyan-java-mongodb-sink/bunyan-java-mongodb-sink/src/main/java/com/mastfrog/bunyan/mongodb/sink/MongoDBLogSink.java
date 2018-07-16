@@ -7,7 +7,7 @@ import static com.mastfrog.bunyan.LoggingModule.GUICE_BINDING_OBJECT_MAPPER;
 import com.mastfrog.bunyan.type.LogLevel;
 import com.mastfrog.giulius.ShutdownHookRegistry;
 import com.mastfrog.settings.Settings;
-import com.mastfrog.util.ConfigurationError;
+import com.mastfrog.util.preconditions.ConfigurationError;
 import com.mongodb.ConnectionString;
 import com.mongodb.MongoCredential;
 import com.mongodb.WriteConcern;

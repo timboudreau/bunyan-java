@@ -26,7 +26,7 @@ package com.mastfrog.bunyan.parse;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.name.Named;
-import com.mastfrog.util.Exceptions;
+import com.mastfrog.util.preconditions.Exceptions;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;

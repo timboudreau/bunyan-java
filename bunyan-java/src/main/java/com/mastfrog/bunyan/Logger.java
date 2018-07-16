@@ -29,7 +29,7 @@ import com.mastfrog.bunyan.type.Info;
 import com.mastfrog.bunyan.type.LogLevel;
 import com.mastfrog.bunyan.type.Trace;
 import com.mastfrog.bunyan.type.Warn;
-import static com.mastfrog.util.Checks.notNull;
+import static com.mastfrog.util.preconditions.Checks.notNull;
 import com.mastfrog.util.collections.ArrayUtils;
 import java.util.LinkedHashMap;
 import java.util.Map;

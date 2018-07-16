@@ -28,7 +28,7 @@ import com.google.inject.name.Named;
 import static com.mastfrog.bunyan.LoggingModule.SETTINGS_KEY_LOG_HOSTNAME;
 import static com.mastfrog.bunyan.LoggingModule.SETTINGS_KEY_LOG_LEVEL;
 import com.mastfrog.settings.Settings;
-import com.mastfrog.util.ConfigurationError;
+import com.mastfrog.util.preconditions.ConfigurationError;
 import com.mastfrog.util.collections.CollectionUtils;
 import java.io.IOException;
 import java.net.InetAddress;

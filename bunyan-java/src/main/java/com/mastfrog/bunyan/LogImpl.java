@@ -24,8 +24,8 @@
 package com.mastfrog.bunyan;
 
 import com.mastfrog.bunyan.type.LogLevel;
-import com.mastfrog.util.Checks;
-import com.mastfrog.util.Strings;
+import com.mastfrog.util.preconditions.Checks;
+import com.mastfrog.util.strings.Strings;
 import com.mastfrog.util.collections.CollectionUtils;
 import com.mastfrog.util.collections.MapBuilder2;
 import com.mastfrog.util.strings.AppendableCharSequence;

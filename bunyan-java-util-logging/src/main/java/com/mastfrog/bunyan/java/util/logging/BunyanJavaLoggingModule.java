@@ -24,7 +24,7 @@
 package com.mastfrog.bunyan.java.util.logging;
 
 import com.google.inject.AbstractModule;
-import static com.mastfrog.util.Checks.notNull;
+import static com.mastfrog.util.preconditions.Checks.notNull;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;

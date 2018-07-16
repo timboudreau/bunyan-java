@@ -26,7 +26,7 @@ package com.mastfrog.bunyan.type;
 import com.mastfrog.bunyan.Log;
 import com.mastfrog.bunyan.Loggers;
 import com.mastfrog.bunyan.LoggingConfig;
-import com.mastfrog.util.Checks;
+import com.mastfrog.util.preconditions.Checks;
 import javax.inject.Provider;
 
 /**

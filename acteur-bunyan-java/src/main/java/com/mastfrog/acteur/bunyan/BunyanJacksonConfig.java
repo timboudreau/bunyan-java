@@ -17,7 +17,7 @@ import com.mastfrog.acteur.util.RequestID;
 import com.mastfrog.jackson.JacksonConfigurer;
 import com.mastfrog.url.Path;
 import com.mastfrog.url.URL;
-import com.mastfrog.util.Strings;
+import com.mastfrog.util.strings.Strings;
 import com.mastfrog.util.time.TimeUtil;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.websocketx.WebSocketFrame;

@@ -30,9 +30,5 @@
             <groupId>${project.groupId}</groupId>
             <artifactId>jackson</artifactId>
         </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>util</artifactId>
-        </dependency>
     </dependencies>
 </project>

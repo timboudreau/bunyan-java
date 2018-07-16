@@ -45,7 +45,7 @@ import com.mastfrog.bunyan.Logger;
 import com.mastfrog.bunyan.LoggingConfig;
 import com.mastfrog.bunyan.LoggingModule;
 import com.mastfrog.jackson.JacksonConfigurer;
-import com.mastfrog.util.Exceptions;
+import com.mastfrog.util.preconditions.Exceptions;
 import static com.mastfrog.util.collections.CollectionUtils.map;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import java.util.Map;

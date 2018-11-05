@@ -86,6 +86,7 @@ try (Log<Debug> log = loggers.debug("saveFile")) {
    log.add("to", newFile);
    // do some complicated logic here, and add different properties to the log record depending what happens
 }
+```
 
 Usage
 -----

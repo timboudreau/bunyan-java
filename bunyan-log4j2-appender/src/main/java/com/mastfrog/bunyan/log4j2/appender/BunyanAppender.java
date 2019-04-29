@@ -107,8 +107,15 @@ public class BunyanAppender extends AbstractAppender {
 
         @Override
         public void accept(LogEvent t) {
+            String name = t.getLoggerName();
+            if (name == null) {
+                name = t.getLoggerFqcn();
+                if (name == null) {
+                    name = "global";
+                }
+            }
             LogLevel<?> level = levelFor(t.getLevel());
-            try (Log<?> log = level.log(t.getLoggerName())) {
+            try (Log<?> log = level.log(name)) {
                 log.add(t.getMessage().getFormattedMessage());
                 log.add("thread", t.getThreadName());
                 MutableLogEvent mle;
@@ -135,7 +142,7 @@ public class BunyanAppender extends AbstractAppender {
             } else if (Level.ALL.equals(level)) {
                 return loggers.info;
             } else {
-                return loggers.info;
+                return loggers.warn;
             }
         }
     }

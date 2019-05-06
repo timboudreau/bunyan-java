@@ -8,6 +8,7 @@
         <relativePath/>
     </parent>
     <artifactId>bunyan-java</artifactId>
+    <url>https://github.com/timboudreau/bunyan-java</url>
     <build>
         <plugins>
             <plugin>
@@ -62,21 +63,23 @@
         </dependency>
     </dependencies>
     <scm>
-        <url>https://github.com/timboudreau/bunyan-java</url>
+        <url>https://github.com/timboudreau/bunyan-java.git</url>
         <connection>scm:git:https://github.com/timboudreau/bunyan-java.git</connection>
         <developerConnection>git@github.com/timboudreau/bunyan-java.git</developerConnection>
     </scm>
+    <issueManagement>
+        <system>Github</system>
+        <url>https://github.com/timboudreau/bunyan-java/issues</url>
+    </issueManagement>
     <organization>
         <name>Mastfrog Technologies</name>
         <url>https://mastfrog.com</url>
     </organization>
-    <issueManagement>
-        <system>Github</system>
-        <url>https://github.com/timboudreau/bunyan-java/issues</url>
-    </issueManagement><licenses>
+    <licenses>
         <license>
             <name>MIT</name>
-            <url>http://opensource.org/licenses/MIT</url>
+            <url>https://opensource.org/licenses/MIT</url>
+            <distribution>repo</distribution>
         </license>
     </licenses>
     <developers>

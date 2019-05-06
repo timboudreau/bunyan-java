@@ -8,20 +8,33 @@
         <relativePath/>
     </parent>
     <artifactId>bunyan-java-mongodb-sink</artifactId>
-    <organization>
-        <name>Mastfrog Technologies</name>
-        <url>https://mastfrog.com</url>
-    </organization>
+    <url>https://github.com/timboudreau/bunyan-java</url>
+    <scm>
+        <url>https://github.com/timboudreau/bunyan-java.git</url>
+        <connection>scm:git:https://github.com/timboudreau/bunyan-java.git</connection>
+        <developerConnection>git@github.com/timboudreau/bunyan-java.git</developerConnection>
+    </scm>
     <issueManagement>
         <system>Github</system>
         <url>https://github.com/timboudreau/bunyan-java/issues</url>
-    </issueManagement><dependencies>
+    </issueManagement>
+    <licenses>
+        <license>
+            <name>MIT</name>
+            <url>https://opensource.org/licenses/MIT</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses><organization>
+        <name>Mastfrog Technologies</name>
+        <url>https://mastfrog.com</url>
+    </organization>
+    <dependencies>
         <dependency>
             <groupId>org.mongodb</groupId>
             <artifactId>mongodb-driver-async</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.mastfrog</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>bunyan-java</artifactId>
         </dependency>                
     </dependencies>

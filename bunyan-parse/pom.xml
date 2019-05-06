@@ -8,14 +8,27 @@
         <relativePath/>
     </parent>
     <artifactId>bunyan-parse</artifactId>
-    <organization>
-        <name>Mastfrog Technologies</name>
-        <url>https://mastfrog.com</url>
-    </organization>
+    <url>https://github.com/timboudreau/bunyan-java</url>
+    <scm>
+        <url>https://github.com/timboudreau/bunyan-java.git</url>
+        <connection>scm:git:https://github.com/timboudreau/bunyan-java.git</connection>
+        <developerConnection>git@github.com/timboudreau/bunyan-java.git</developerConnection>
+    </scm>
     <issueManagement>
         <system>Github</system>
         <url>https://github.com/timboudreau/bunyan-java/issues</url>
-    </issueManagement><build>
+    </issueManagement>
+    <licenses>
+        <license>
+            <name>MIT</name>
+            <url>https://opensource.org/licenses/MIT</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses><organization>
+        <name>Mastfrog Technologies</name>
+        <url>https://mastfrog.com</url>
+    </organization>
+    <build>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

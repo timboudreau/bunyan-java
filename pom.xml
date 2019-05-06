@@ -74,7 +74,10 @@
             </releases>
         </repository>
     </repositories>
-    <url>https://github.com/timboudreau/bunyan-java</url>
+    <issueManagement>
+        <system>Github</system>
+        <url>https://github.com/timboudreau/bunyan-java/issues</url>
+    </issueManagement>
     <scm>
         <url>https://github.com/timboudreau/bunyan-java</url>
         <connection>scm:git:https://github.com/timboudreau/bunyan-java.git</connection>

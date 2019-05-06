@@ -8,7 +8,10 @@
         <relativePath/>
     </parent>
     <artifactId>bunyan-log4j2-appender</artifactId>
-    <dependencies>
+    <issueManagement>
+        <system>Github</system>
+        <url>https://github.com/timboudreau/bunyan-java/issues</url>
+    </issueManagement><dependencies>
         <dependency>
             <groupId>com.mastfrog</groupId>
             <artifactId>bunyan-java</artifactId>

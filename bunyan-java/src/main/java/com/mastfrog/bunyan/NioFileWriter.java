@@ -21,15 +21,12 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
 package com.mastfrog.bunyan;
 
 import com.mastfrog.giulius.ShutdownHookRegistry;
 import com.mastfrog.util.thread.BufferPool;
 import com.mastfrog.util.thread.FactoryThreadLocal;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
@@ -37,6 +34,7 @@ import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
 import java.nio.charset.CoderResult;
+import java.nio.file.StandardOpenOption;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
@@ -57,9 +55,10 @@ class NioFileWriter extends SimpleLogWriter implements Callable<Void>, LogWriter
     private final File file;
     private final BufferPool pool;
 
-    NioFileWriter(File file, boolean synchronous, int bufferSize) throws FileNotFoundException {
+    NioFileWriter(File file, boolean synchronous, int bufferSize) throws IOException {
         pool = new BufferPool(bufferSize <= 0 ? 4096 : bufferSize);
-        channel = new FileOutputStream(file, true).getChannel();
+        channel = FileChannel.open(file.toPath(), StandardOpenOption.CREATE,
+                StandardOpenOption.APPEND, StandardOpenOption.WRITE);
         encoder = new FactoryThreadLocal<>(charset::newEncoder);
         this.synchronous = synchronous;
         this.file = file;

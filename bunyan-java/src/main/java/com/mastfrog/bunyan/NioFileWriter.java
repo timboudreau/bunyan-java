@@ -156,6 +156,7 @@ class NioFileWriter extends SimpleLogWriter implements Callable<Void>, LogWriter
         }
     }
 
+    @Override
     public String toString() {
         return getClass().getSimpleName() + "{ file=" + file + " }";
     }

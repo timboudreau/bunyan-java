@@ -1,5 +1,7 @@
-bunyan-java
-===========
+bunyan-java (original - obsoleted by bunyan-java-v2)
+=========================================
+
+__This project has been replaced with [bunyan-java-v2 which simplifies its API](https://github.com/timboudreau/bunyan-java-v2) which should be used instead__
 
 An opinionated implementation of a simple logger in Java whose output is compatible with
 [bunyan](https://github.com/trentm/node-bunyan), the excellent JSON
